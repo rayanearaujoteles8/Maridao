@@ -74,3 +74,9 @@ POST /providers cria conta e perfil em transação. E-mail único em contas; doc
 Aplicar migrations/003_provider_profiles.sql como postgres antes de testar. A integração real depende da execução na máquina da usuária.
 
 O campo de identificação do prestador mostra Nome completo para CPF e Razão social para CNPJ, conforme ajuste solicitado pela usuária, incluindo o rótulo de acessibilidade.
+
+## Busca de prestadores
+
+RF03.1/UC03.1 e RF03.2/UC03.2: cliente autenticado pode filtrar por parte do nome da categoria e do bairro, ignorando maiúsculas e minúsculas. A pesquisa fica restrita a Palmas–TO, com até 20 resultados por página. Campos opcionais permitem listar todos os prestadores cadastrados. RF03.3/UC03.3: o cliente expande o perfil profissional para consultar categorias, bairros, especialidades e disponibilidade declarativa. Avaliações continuam pendentes de RF08; não exibir notas fictícias.
+
+GET /providers verifica sessão e perfil de cliente no servidor. Retorna somente campos profissionais; exclui telefone, e-mail, documento, índice de duplicidade, criptograma e senha. Prestadores recebem 403, sessão ausente/expirada recebe 401. Filtros parametrizados com limite de 100 caracteres. Cadastro/login do prestador e ajuste da rolagem foram confirmados pela usuária no iPhone. Busca e perfil aguardam teste real.

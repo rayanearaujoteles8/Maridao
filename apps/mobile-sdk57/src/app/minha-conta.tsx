@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Redirect, useFocusEffect } from 'expo-router';
+import { Redirect, useFocusEffect, router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, styles } from '@/components/access-screen';
@@ -38,7 +38,8 @@ export default function AccountScreen() {
   }
   return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.page}>
     <Text accessibilityRole="header" style={styles.title}>Minha conta</Text>
-    {profile ? <><Text style={styles.cardTitle}>Olá, {profile.name}!</Text><Text style={styles.description}>{profile.neighborhood} · {profile.city} – {profile.state}</Text><Text style={styles.note}>{profile.role === 'provider' ? 'Você está conectado como prestador. Suas solicitações disponíveis e propostas serão disponibilizadas nas próximas etapas.' : 'Você está conectado como cliente. As funcionalidades de busca e solicitação de serviços serão disponibilizadas nas próximas etapas.'}</Text></> : !error ? <Text style={styles.description}>Conferindo sua sessão…</Text> : null}
+    {profile ? <><Text style={styles.cardTitle}>Olá, {profile.name}!</Text><Text style={styles.description}>{profile.neighborhood} · {profile.city} – {profile.state}</Text><Text style={styles.note}>{profile.role === 'provider' ? 'Você está conectado como prestador. Suas solicitações disponíveis e propostas serão disponibilizadas nas próximas etapas.' : 'Você está conectado como cliente. Use a busca para encontrar profissionais. As solicitações de serviço serão disponibilizadas na próxima etapa.'}</Text></> : !error ? <Text style={styles.description}>Conferindo sua sessão…</Text> : null}
+    {profile?.role === 'customer' ? <Pressable accessibilityRole="button" style={s.button} onPress={() => router.push('./buscar-prestadores')}><Text style={s.buttonText}>Buscar prestadores</Text></Pressable> : null}
     {error ? <><Text accessibilityRole="alert" style={s.error}>{error}</Text><Pressable accessibilityRole="button" style={s.retry} onPress={() => setReload(value => value + 1)}><Text>Tentar carregar novamente</Text></Pressable></> : null}
     <Pressable accessibilityRole="button" disabled={busy} accessibilityState={{ disabled: busy, busy }} onPress={logout} style={({ pressed }) => [s.button, (pressed || busy) && { opacity: 0.7 }]}><Text style={s.buttonText}>{busy ? 'Saindo…' : 'Sair da conta'}</Text></Pressable>
   </ScrollView></SafeAreaView>;

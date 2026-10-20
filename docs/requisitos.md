@@ -62,3 +62,15 @@ Sessões: token aleatório de 256 bits, somente SHA-256 do token no PostgreSQL, 
 RF10.2/UC10.2: botão Sair revoga a sessão no servidor e limpa a memória do app. Se o servidor não confirmar a revogação, o aplicativo pede nova tentativa e não informa sucesso. Token mantido somente em memória, sem persistência; fechar completamente o app exige novo login. Recuperação de senha e persistência segura opcional de sessão são etapas futuras. Não há login de prestador enquanto seu cadastro não estiver implementado.
 
 Aplicar migrations/002_sessions.sql como postgres antes de testar. Testes reais de login, logout e expiração aguardam execução no computador da usuária; os testes de unidade usam repositório simulado.
+
+## Cadastro do prestador
+
+A usuária definiu em 20/10/2026 que o cadastro aceita CPF ou CNPJ. RF02.1/UC02.1 e RF10.4: nome pessoal/profissional, e-mail, telefone, senha de 8 a 128 caracteres, documento escolhido, categorias, especialidades, bairros de Palmas e disponibilidade declarativa. Listas informadas manualmente, sem GPS ou agenda automática. CNPJ aceita formato numérico e alfanumérico, validando seus dígitos conforme Receita Federal; isso não comprova identidade ou situação cadastral.
+
+RNF02.2: documento do prestador armazenado com AES-256-GCM, IV aleatório, autenticação e versão do formato. HMAC-SHA256 com chave independente permite verificar duplicidade sem guardar o documento legível. Chaves somente no .env do servidor, fora do Git. Manter cópia segura das chaves junto à política de backup: perdê-las impede recuperar documentos; a rotação requer migração coordenada de dados e índices.
+
+POST /providers cria conta e perfil em transação. E-mail único em contas; documento único entre prestadores. O vínculo de dois perfis na mesma conta continua pendente e não é criado automaticamente. O login existente passa a aceitar clientes e prestadores com perfil identificado pelo servidor. Não retornar documento, índice ou texto criptografado ao aplicativo.
+
+Aplicar migrations/003_provider_profiles.sql como postgres antes de testar. A integração real depende da execução na máquina da usuária.
+
+O campo de identificação do prestador mostra Nome completo para CPF e Razão social para CNPJ, conforme ajuste solicitado pela usuária, incluindo o rótulo de acessibilidade.

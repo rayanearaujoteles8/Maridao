@@ -3,7 +3,7 @@ import { createDatabasePool } from './database.ts';
 import { verifyPassword } from './password.ts';
 import type { Pool } from 'pg';
 
-export type Profile = { id: string; name: string; email: string; neighborhood: string; city: string; state: string };
+export type Profile = { id: string; name: string; email: string; neighborhood: string; city: string; state: string; role?: 'customer' | 'provider' };
 export type Account = Profile & { password_hash: string };
 export interface AuthStore {
   findAccount(email: string): Promise<Account | undefined>;
@@ -38,7 +38,7 @@ function db() { return pool ??= createDatabasePool(); }
 export async function closeAuthDatabase() { if (pool) await pool.end(); }
 export const databaseAuthStore: AuthStore = {
   async findAccount(email) {
-    const result = await db().query<Account>(`SELECT a.id, a.email, a.password_hash, c.full_name AS name, c.neighborhood, c.city, c.state FROM maridao.accounts a JOIN maridao.customer_profiles c ON c.account_id=a.id WHERE a.email=$1`, [email]);
+    const result = await db().query<Account>(`SELECT a.id,a.email,a.password_hash,COALESCE(c.full_name,p.full_name) AS name,COALESCE(c.neighborhood,array_to_string(p.neighborhoods, ', ')) AS neighborhood,COALESCE(c.city,p.city) AS city,COALESCE(c.state,p.state) AS state,CASE WHEN c.account_id IS NOT NULL THEN 'customer' ELSE 'provider' END AS role FROM maridao.accounts a LEFT JOIN maridao.customer_profiles c ON c.account_id=a.id LEFT JOIN maridao.provider_profiles p ON p.account_id=a.id WHERE a.email=$1 AND (c.account_id IS NOT NULL OR p.account_id IS NOT NULL)`, [email]);
     return result.rows[0];
   },
   async createSession(hash, id, expiry) {
@@ -46,7 +46,7 @@ export const databaseAuthStore: AuthStore = {
     await db().query('INSERT INTO maridao.sessions (token_hash, account_id, expires_at) VALUES ($1, $2, $3)', [hash, id, expiry]);
   },
   async findSession(hash) {
-    const result = await db().query<Profile>(`SELECT a.id, a.email, c.full_name AS name, c.neighborhood, c.city, c.state FROM maridao.sessions s JOIN maridao.accounts a ON a.id=s.account_id JOIN maridao.customer_profiles c ON c.account_id=a.id WHERE s.token_hash=$1 AND s.expires_at > now()`, [hash]);
+    const result = await db().query<Profile>(`SELECT a.id,a.email,COALESCE(c.full_name,p.full_name) AS name,COALESCE(c.neighborhood,array_to_string(p.neighborhoods, ', ')) AS neighborhood,COALESCE(c.city,p.city) AS city,COALESCE(c.state,p.state) AS state,CASE WHEN c.account_id IS NOT NULL THEN 'customer' ELSE 'provider' END AS role FROM maridao.sessions s JOIN maridao.accounts a ON a.id=s.account_id LEFT JOIN maridao.customer_profiles c ON c.account_id=a.id LEFT JOIN maridao.provider_profiles p ON p.account_id=a.id WHERE s.token_hash=$1 AND s.expires_at > now() AND (c.account_id IS NOT NULL OR p.account_id IS NOT NULL)`, [hash]);
     return result.rows[0];
   },
   async deleteSession(hash) { await db().query('DELETE FROM maridao.sessions WHERE token_hash=$1', [hash]); },

@@ -1,3 +1,4 @@
+import { closeProviderDatabase } from './providers.ts';
 import { closeAuthDatabase } from './auth.ts';
 import { app } from './app.ts';
 import { closeDatabase } from './customers.ts';
@@ -15,5 +16,5 @@ server.on('error', () => {
   process.exitCode = 1;
 });
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.on(signal, () => { server.close(() => { void closeDatabase(); void closeAuthDatabase(); }); });
+  process.on(signal, () => { server.close(() => { void closeDatabase(); void closeAuthDatabase(); void closeProviderDatabase(); }); });
 }

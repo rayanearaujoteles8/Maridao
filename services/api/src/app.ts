@@ -1,3 +1,4 @@
+import { requestRoutes } from './requests.ts';
 import { searchRoutes } from './provider-search.ts';
 import { registerProvider } from './providers.ts';
 import { ProviderInputError } from './provider-validation.ts';
@@ -17,6 +18,7 @@ app.get('/health', (_request, response) => {
   response.json({ status: 'ok', service: 'maridao-api' });
 });
 app.use('/auth', authRoutes);
+app.use('/requests', requestRoutes);
 app.use('/providers', searchRoutes);
 app.post('/customers', registrationLimit, async (request, response, next) => {
   if (!request.is('application/json')) { response.status(415).json({ error: 'Envie os dados em JSON.' }); return; }

@@ -80,3 +80,11 @@ O campo de identificação do prestador mostra Nome completo para CPF e Razão s
 RF03.1/UC03.1 e RF03.2/UC03.2: cliente autenticado pode filtrar por parte do nome da categoria e do bairro, ignorando maiúsculas e minúsculas. A pesquisa fica restrita a Palmas–TO, com até 20 resultados por página. Campos opcionais permitem listar todos os prestadores cadastrados. RF03.3/UC03.3: o cliente expande o perfil profissional para consultar categorias, bairros, especialidades e disponibilidade declarativa. Avaliações continuam pendentes de RF08; não exibir notas fictícias.
 
 GET /providers verifica sessão e perfil de cliente no servidor. Retorna somente campos profissionais; exclui telefone, e-mail, documento, índice de duplicidade, criptograma e senha. Prestadores recebem 403, sessão ausente/expirada recebe 401. Filtros parametrizados com limite de 100 caracteres. Cadastro/login do prestador e ajuste da rolagem foram confirmados pela usuária no iPhone. Busca e perfil aguardam teste real.
+
+## Criação de solicitação
+
+RF04/UC04.1-UC04.3: cliente autenticado informa categoria, descrição e bairro em Palmas–TO. Data e período de preferência opcionais, sem agenda ou reserva. A tela aceita DD/MM/AAAA, e a API recebe YYYY-MM-DD; datas impossíveis e anteriores ao dia atual de Palmas são rejeitadas. Campos e respectivos limites são validados no servidor.
+
+POST /requests deriva o cliente exclusivamente da sessão, rejeita perfil de prestador e não aceita identificação de outro cliente, cidade ou status no formulário. O PostgreSQL define status Aberta, cidade Palmas e UF TO. Conta vinculada pela chave do perfil de cliente. A tabela não permite atualização ou exclusão pelo usuário da API nesta etapa. A listagem e acompanhamento das solicitações serão desenvolvidos nas próximas etapas. Sem repetição automática de requisições em falhas de conexão; confirmação real de criação depende do teste local.
+
+Aplicar migrations/004_service_requests.sql como postgres antes de testar. Busca e perfil profissional foram confirmados pela usuária no iPhone.

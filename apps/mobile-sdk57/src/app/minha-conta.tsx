@@ -6,7 +6,7 @@ import { colors, styles } from '@/components/access-screen';
 import { useSession } from '@/components/session';
 import { api, ApiError } from '@/lib/api';
 
-type Profile = { name: string; neighborhood: string; city: string; state: string };
+type Profile = { name: string; neighborhood: string; city: string; state: string; role: 'customer' | 'provider' };
 export default function AccountScreen() {
   const { session, setSession } = useSession();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -38,7 +38,7 @@ export default function AccountScreen() {
   }
   return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.page}>
     <Text accessibilityRole="header" style={styles.title}>Minha conta</Text>
-    {profile ? <><Text style={styles.cardTitle}>Olá, {profile.name}!</Text><Text style={styles.description}>{profile.neighborhood} · {profile.city} – {profile.state}</Text><Text style={styles.note}>Você está conectado como cliente. As funcionalidades de busca e solicitação de serviços serão disponibilizadas nas próximas etapas.</Text></> : !error ? <Text style={styles.description}>Conferindo sua sessão…</Text> : null}
+    {profile ? <><Text style={styles.cardTitle}>Olá, {profile.name}!</Text><Text style={styles.description}>{profile.neighborhood} · {profile.city} – {profile.state}</Text><Text style={styles.note}>{profile.role === 'provider' ? 'Você está conectado como prestador. Suas solicitações disponíveis e propostas serão disponibilizadas nas próximas etapas.' : 'Você está conectado como cliente. As funcionalidades de busca e solicitação de serviços serão disponibilizadas nas próximas etapas.'}</Text></> : !error ? <Text style={styles.description}>Conferindo sua sessão…</Text> : null}
     {error ? <><Text accessibilityRole="alert" style={s.error}>{error}</Text><Pressable accessibilityRole="button" style={s.retry} onPress={() => setReload(value => value + 1)}><Text>Tentar carregar novamente</Text></Pressable></> : null}
     <Pressable accessibilityRole="button" disabled={busy} accessibilityState={{ disabled: busy, busy }} onPress={logout} style={({ pressed }) => [s.button, (pressed || busy) && { opacity: 0.7 }]}><Text style={s.buttonText}>{busy ? 'Saindo…' : 'Sair da conta'}</Text></Pressable>
   </ScrollView></SafeAreaView>;

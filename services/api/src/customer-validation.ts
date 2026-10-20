@@ -34,7 +34,7 @@ export function validateCustomer(input: unknown): CustomerInput {
   if (data.cpf && (!/^[\d.\s-]+$/.test(data.cpf) || data.cpf.length > 20 || !validCpf(data.cpf.replace(/\D/g, '')))) errors.cpf = 'Confira os números do CPF.';
   if (data.neighborhood.length > 100) errors.neighborhood = 'Use até 100 caracteres.';
   // Long passphrases are accepted without mandatory symbol/uppercase rules.
-  if ([...data.password].length < 15 || [...data.password].length > 128) errors.password = 'Use uma senha de 15 a 128 caracteres.';
+  if ([...data.password].length < 8 || [...data.password].length > 128) errors.password = 'Use uma senha de 8 a 128 caracteres.';
   if (Object.keys(errors).length) throw new InputError(errors);
   data.phone = data.phone.replace(/\D/g, '');
   data.cpf = data.cpf.replace(/\D/g, '');

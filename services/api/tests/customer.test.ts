@@ -53,3 +53,10 @@ test('grava conta e perfil juntos com parametros e desfaz a conta se o perfil fa
     assert.ok(released);
   }
 });
+
+
+test('aceita senha com 8 caracteres e rejeita 7 ou mais de 128', () => {
+  assert.equal(validateCustomer({ ...sample, password: 'a'.repeat(8) }).password.length, 8);
+  assert.equal(validateCustomer({ ...sample, password: 'a'.repeat(128) }).password.length, 128);
+  for (const length of [7, 129]) assert.throws(() => validateCustomer({ ...sample, password: 'a'.repeat(length) }), InputError);
+});

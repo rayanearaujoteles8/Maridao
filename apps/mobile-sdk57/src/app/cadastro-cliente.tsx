@@ -40,7 +40,7 @@ export default function CustomerRegistration() {
     if (values.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) next.email = 'Informe um e-mail válido.';
     if (values.phone.trim() && !/^\d{10,11}$/.test(values.phone.replace(/\D/g, ''))) next.phone = 'Informe o telefone com DDD (10 ou 11 dígitos).';
     if (values.cpf.trim() && !validCpf(values.cpf)) next.cpf = 'Confira os números do CPF.';
-    if ([...values.password].length < 15 || [...values.password].length > 128) next.password = 'Use uma senha de 15 a 128 caracteres.';
+    if ([...values.password].length < 8 || [...values.password].length > 128) next.password = 'Use uma senha de 8 a 128 caracteres.';
     setErrors(next);
     if (Object.keys(next).length) { setMessage('Revise os campos indicados abaixo.'); return; }
     const base = process.env.EXPO_PUBLIC_API_URL;
@@ -80,7 +80,7 @@ export default function CustomerRegistration() {
           <Text accessibilityRole="header" style={styles.title}>Cadastro de cliente</Text>
           <Text style={styles.description}>Encontre profissionais perto de você.</Text>
           <View style={s.location}><Text style={s.locationTitle}>Palmas – TO</Text><Text style={styles.note}>Nesta primeira versão, atendemos somente Palmas.</Text></View>
-          <Text style={styles.note}>Todos os campos são obrigatórios. Ao criar a conta, seus dados serão enviados ao servidor do Maridão. Use uma senha de 15 a 128 caracteres; pode ser uma frase longa.</Text>
+          <Text style={styles.note}>Todos os campos são obrigatórios. Ao criar a conta, seus dados serão enviados ao servidor do Maridão. Use uma senha de 8 a 128 caracteres; pode ser uma frase longa.</Text>
           {message ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={s.message}>{message}</Text> : null}
           {fields.map(field => <View key={field.key} style={s.group}>
             <Text style={s.label}>{field.label}</Text>

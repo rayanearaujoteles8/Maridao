@@ -47,7 +47,7 @@ O formulário atual faz apenas conferência local de obrigatoriedade, formato de
 
 POST /customers implementa RF01.1 e RF10.4. Recebe name, email, phone, cpf, neighborhood e password; cidade e UF são definidas pelo servidor. O servidor valida os dados, normaliza e-mail, telefone e CPF, usa consultas parametrizadas e grava conta e perfil na mesma transação. Duplicidades são impedidas também pelos índices do banco. Não envia CPF nem hash na resposta. Não cria sessão ou login automático.
 
-Critério técnico inicial de senha: 15 a 128 caracteres, sem obrigatoriedade de símbolos ou maiúsculas, aceitando frases longas. Hash scrypt nativo do Node.js com N=131072, r=8, p=1 e salt aleatório de 16 bytes por senha. Registrar esse detalhamento no UC10.4.
+Critério de senha atualizado por solicitação da usuária em 20/10/2026: 8 a 128 caracteres, sem obrigatoriedade de símbolos ou maiúsculas, aceitando frases longas. Hash scrypt nativo do Node.js com N=131072, r=8, p=1 e salt aleatório de 16 bytes por senha. Registrar esse detalhamento no UC10.4.
 
 Limite local: 10 tentativas de cadastro por IP em 15 minutos e até dois processamentos simultâneos. Em implantação com múltiplas instâncias, substituir o controle em memória por armazenamento compartilhado. A versão pública requer HTTPS e revisão de segurança; o teste local deve usar dados fictícios e senha exclusiva para teste. A verificação de CPF comprova somente formato e dígitos, não identidade.
 

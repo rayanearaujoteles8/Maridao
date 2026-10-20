@@ -1,3 +1,5 @@
+import { useCatalog } from '@/hooks/use-catalog';
+import { SelectionField, CatalogNotice } from '@/components/selection-field';
 import { useRef, useState } from 'react';
 import { Link, Redirect } from 'expo-router';
 import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -12,10 +14,11 @@ const empty = { category: '', description: '', neighborhood: '', preferredDate: 
 const fields = [
   { key: 'category', label: 'Qual serviço você precisa?', hint: 'Ex.: montagem de móveis', max: 100 },
   { key: 'description', label: 'Conte um pouco mais', hint: 'O que precisa ser feito? Inclua os detalhes que podem ajudar o profissional.', max: 3000 },
-  { key: 'neighborhood', label: 'Em qual bairro?', hint: 'Bairro do atendimento em Palmas', max: 100 },
+  { key: 'neighborhood', label: 'Em qual bairro ou quadra?', hint: 'Bairro do atendimento em Palmas', max: 100 },
 ] as const;
 
 export default function NewRequest() {
+  const catalog = useCatalog();
   const { session, setSession } = useSession();
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -60,10 +63,11 @@ export default function NewRequest() {
         <Pressable accessibilityRole="button" onPress={() => { setPublished(false); setMessage(''); }} style={s.secondary}><Text style={s.secondaryText}>Criar outra solicitação</Text></Pressable>
       </View> : <>
         <View style={s.header}><Text style={s.location}>PALMAS · TO</Text><Text accessibilityRole="header" style={s.title}>Como podemos ajudar?</Text><Text style={s.subtitle}>Descreva o serviço que você precisa.</Text></View>
+        {!catalog.data ? <CatalogNotice error={catalog.error} retry={catalog.retry} /> : null}
         <View style={s.section}>
           {fields.map(field => <View key={field.key} style={s.group}>
             <Text style={s.label}>{field.label}</Text>
-            <TextInput accessibilityLabel={field.label} accessibilityHint={errors[field.key]} editable={!busy} style={[s.input, field.key === 'description' && s.description, errors[field.key] ? s.invalid : undefined]} placeholder={field.hint} placeholderTextColor="#6B7561" maxLength={field.max} value={values[field.key]} multiline={field.key === 'description'} scrollEnabled={false} onChangeText={text => change(field.key, text)} />
+            {field.key === 'category' || field.key === 'neighborhood' ? <SelectionField label={field.label} options={field.key === 'category' ? catalog.data?.services ?? [] : catalog.data?.neighborhoods ?? []} values={values[field.key] ? [values[field.key]] : []} disabled={busy || !catalog.data} error={errors[field.key]} onChange={selected => change(field.key, selected[0] ?? '')} /> : <TextInput accessibilityLabel={field.label} accessibilityHint={errors[field.key]} editable={!busy} style={[s.input, field.key === 'description' && s.description, errors[field.key] ? s.invalid : undefined]} placeholder={field.hint} placeholderTextColor="#6B7561" maxLength={field.max} value={values[field.key]} multiline={field.key === 'description'} scrollEnabled={false} onChangeText={text => change(field.key, text)} />}
             {errors[field.key] ? <Text style={s.error}>{errors[field.key]}</Text> : null}
           </View>)}
         </View>

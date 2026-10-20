@@ -1,12 +1,15 @@
+import { useCatalog } from '@/hooks/use-catalog';
+import { SelectionField, CatalogNotice } from '@/components/selection-field';
 import { useRef, useState } from 'react';
 import { Link, Redirect } from 'expo-router';
-import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, styles } from '@/components/access-screen';
 import { useSession } from '@/components/session';
 import { api, ApiError } from '@/lib/api';
 type Provider={id:string;name:string;categories:string[];specialties:string[];neighborhoods:string[];availability:string;city:string;state:string};
 export default function SearchScreen(){
+ const catalog=useCatalog();
  const {session,setSession}=useSession();
  const [category,setCategory]=useState(''),[neighborhood,setNeighborhood]=useState('');
  const [providers,setProviders]=useState<Provider[]>([]),[busy,setBusy]=useState(false),[message,setMessage]=useState('Informe os filtros desejados ou toque em Buscar para ver os prestadores cadastrados.');
@@ -30,8 +33,9 @@ export default function SearchScreen(){
  return <SafeAreaView style={styles.safe}><ScrollView style={{flex:1}} contentContainerStyle={[styles.page,{paddingBottom:64}]} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS==='ios'?'interactive':'on-drag'}>
   <Link href="/minha-conta" style={styles.back}>← Minha conta</Link>
   <Text accessibilityRole="header" style={styles.title}>Encontre um prestador</Text><Text style={styles.description}>Serviços em Palmas – TO</Text>
-  <View style={s.group}><Text style={s.label}>Categoria de serviço</Text><TextInput accessibilityLabel="Categoria de serviço" style={s.input} placeholder="Ex.: montagem de móveis" value={category} onChangeText={setCategory} maxLength={100} editable={!busy}/></View>
-  <View style={s.group}><Text style={s.label}>Bairro</Text><TextInput accessibilityLabel="Bairro" style={s.input} placeholder="Em qual bairro precisa de atendimento?" value={neighborhood} onChangeText={setNeighborhood} maxLength={100} editable={!busy}/></View>
+  {!catalog.data?<CatalogNotice error={catalog.error} retry={catalog.retry}/>:null}
+  <View style={s.group}><Text style={s.label}>Categoria de serviço</Text><SelectionField label="Categoria de serviço" options={catalog.data?.services??[]} values={category?[category]:[]} onChange={selected=>setCategory(selected[0]??'')} placeholder="Todas as categorias" disabled={busy||!catalog.data}/></View>
+  <View style={s.group}><Text style={s.label}>Bairro ou quadra</Text><SelectionField label="Bairro ou quadra" options={catalog.data?.neighborhoods??[]} values={neighborhood?[neighborhood]:[]} onChange={selected=>setNeighborhood(selected[0]??'')} placeholder="Todas as localidades de Palmas" disabled={busy||!catalog.data}/></View>
   <Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={s.button} onPress={()=>search()}><Text style={s.buttonText}>{busy?'Buscando…':'Buscar prestadores'}</Text></Pressable>
   {message?<Text accessibilityRole="alert" style={styles.note}>{message}</Text>:null}
   {providers.map(provider=><View key={provider.id} style={styles.card}><Text style={styles.cardTitle}>{provider.name}</Text><Text style={styles.field}>{provider.categories.join(' · ')}</Text><Text style={styles.note}>{provider.neighborhoods.join(', ')} · {provider.city} – {provider.state}</Text><Pressable accessibilityRole="button" accessibilityState={{expanded:expanded===provider.id}} style={s.toggle} onPress={()=>setExpanded(old=>old===provider.id?null:provider.id)}><Text style={s.label}>{expanded===provider.id?'Fechar perfil':'Ver perfil profissional'}</Text></Pressable>{expanded===provider.id?<><Text style={s.label}>Especialidades</Text><Text style={styles.field}>{provider.specialties.join(', ')}</Text><Text style={s.label}>Disponibilidade informada</Text><Text style={styles.field}>{provider.availability}</Text><Text style={styles.note}>As avaliações estarão disponíveis após a implementação dos atendimentos e avaliações.</Text></>:null}</View>)}

@@ -1,3 +1,5 @@
+import { useCatalog } from '@/hooks/use-catalog';
+import { SelectionField, CatalogNotice } from '@/components/selection-field';
 import { useRef, useState } from 'react';
 import { Link } from 'expo-router';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
@@ -10,7 +12,7 @@ const fields: { key: Field; label: string; props?: TextInputProps }[] = [
   { key: 'email', label: 'E-mail', props: { keyboardType: 'email-address', autoCapitalize: 'none', autoComplete: 'email', maxLength: 254 } },
   { key: 'phone', label: 'Telefone com DDD', props: { keyboardType: 'phone-pad', autoComplete: 'tel', maxLength: 16, placeholder: '(63) 99999-9999' } },
   { key: 'cpf', label: 'CPF', props: { keyboardType: 'number-pad', maxLength: 14, placeholder: '000.000.000-00' } },
-  { key: 'neighborhood', label: 'Bairro em Palmas', props: { autoCapitalize: 'words', maxLength: 100 } },
+  { key: 'neighborhood', label: 'Bairro ou quadra em Palmas', props: { autoCapitalize: 'words', maxLength: 100 } },
   { key: 'password', label: 'Senha', props: { autoCapitalize: 'none', autoComplete: 'new-password', maxLength: 128 } },
 ];
 const empty = { name: '', email: '', phone: '', cpf: '', neighborhood: '', password: '' };
@@ -27,6 +29,7 @@ function validCpf(value: string) {
 }
 
 export default function CustomerRegistration() {
+  const catalog = useCatalog();
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [visiblePassword, setVisiblePassword] = useState(false);
@@ -82,9 +85,10 @@ export default function CustomerRegistration() {
           <View style={s.location}><Text style={s.locationTitle}>Palmas – TO</Text><Text style={styles.note}>Nesta primeira versão, atendemos somente Palmas.</Text></View>
           <Text style={styles.note}>Todos os campos são obrigatórios. Ao criar a conta, seus dados serão enviados ao servidor do Maridão. Use uma senha de 8 a 128 caracteres; pode ser uma frase longa.</Text>
           {message ? <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={s.message}>{message}</Text> : null}
+          {!catalog.data ? <CatalogNotice error={catalog.error} retry={catalog.retry} /> : null}
           {fields.map(field => <View key={field.key} style={s.group}>
             <Text style={s.label}>{field.label}</Text>
-            <TextInput {...field.props} editable={!sending} value={values[field.key]} autoCorrect={false} secureTextEntry={field.key === 'password' && !visiblePassword} accessibilityLabel={field.label} accessibilityHint={errors[field.key]} placeholderTextColor="#64705C" style={[s.input, errors[field.key] ? s.invalid : undefined]} onChangeText={text => { setValues(previous => ({ ...previous, [field.key]: text })); setErrors(previous => ({ ...previous, [field.key]: undefined })); setMessage(''); }} />
+            {field.key === 'neighborhood' ? <SelectionField label="Bairro ou quadra em Palmas" options={catalog.data?.neighborhoods ?? []} values={values.neighborhood ? [values.neighborhood] : []} disabled={sending || !catalog.data} error={errors.neighborhood} onChange={selected => { setValues(old => ({ ...old, neighborhood: selected[0] ?? '' })); setErrors(old => ({ ...old, neighborhood: undefined })); }} /> : <TextInput {...field.props} editable={!sending} value={values[field.key]} autoCorrect={false} secureTextEntry={field.key === 'password' && !visiblePassword} accessibilityLabel={field.label} accessibilityHint={errors[field.key]} placeholderTextColor="#64705C" style={[s.input, errors[field.key] ? s.invalid : undefined]} onChangeText={text => { setValues(previous => ({ ...previous, [field.key]: text })); setErrors(previous => ({ ...previous, [field.key]: undefined })); setMessage(''); }} />}
             {errors[field.key] ? <Text style={s.error}>{errors[field.key]}</Text> : null}
             {field.key === 'password' ? <Pressable accessibilityRole="button" accessibilityLabel={visiblePassword ? 'Ocultar senha' : 'Mostrar senha'} onPress={() => setVisiblePassword(value => !value)} style={s.toggle}><Text>{visiblePassword ? 'Ocultar senha' : 'Mostrar senha'}</Text></Pressable> : null}
           </View>)}

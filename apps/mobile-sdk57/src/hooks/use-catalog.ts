@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 export type Option = { value: string; label: string; aliases?: string[] };
-export type Catalog = { services: (Option & { specialties: string[] })[]; neighborhoods: Option[] };
+export type Catalog = { services: (Option & { specialties: string[] })[]; neighborhoods: Option[]; coverageRegions: (Option & {description: string; neighborhoods: string[]})[] };
 let cached: Catalog | null = null;
 let pending: Promise<Catalog> | null = null;
 export function useCatalog() {

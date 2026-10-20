@@ -19,3 +19,11 @@ GET /catalog oferece uma fonte compartilhada para cadastro de cliente, prestador
 Registros antigos não foram apagados ou convertidos por suposição. A busca sem filtros continua mostrando todos os prestadores. Nomes antigos fora do catálogo, como uma localidade genérica Centro, precisam de futura revisão/edição para corresponder às opções atuais.
 
 Não é necessária migração SQL. Reinicie a API para carregar os arquivos e o aplicativo para renovar o cache em memória do catálogo.
+
+## Áreas de atendimento do prestador
+
+O cadastro oferece regiões ou localidades específicas. Toda Palmas abrange qualquer localidade reconhecida do catálogo, incluindo distritos. É uma escolha exclusiva. Clientes e solicitações continuam exigindo uma localidade específica.
+
+As regiões são agrupamentos operacionais do Maridão, não limites administrativos oficiais. A composição é exibida no cadastro antes da escolha: Centro / Plano Diretor reúne identificações cadastrais NE, NO, SE e SO; Taquaralto reúne suas etapas identificadas por TAQ., Santa Fé e Vale do Sol identificados assim no cadastro, e Industrial de Taquaralto; Jardins Aureny I a IV têm opção separada. Demais bairros podem ser selecionados individualmente. Não se afirma que essa relação cubra toda a região sul ou leste. Referência municipal que distingue Taquaralto e Aurenys: https://palmas.to.gov.br/core/noticias/sede-da-subprefeitura-da-regiao-sul-de-palmas-e-inaugurada-no-jardim-aureny-iii/ .
+
+A API guarda identificadores REGIAO: e CIDADE: no campo de áreas de atendimento existente, sem aumentar permissões ou alterar cadastros anteriores. A busca por uma localidade combina áreas específicas, suas regiões correspondentes e Toda Palmas usando parâmetros SQL. Não faz correspondência regional para filtros desconhecidos. Os resultados exibem nomes legíveis. Novas inclusões no catálogo passam a integrar Toda Palmas; alterações na composição de regiões exigem revisão da regra em src/coverage.ts.

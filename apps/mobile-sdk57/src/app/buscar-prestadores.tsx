@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, styles } from '@/components/access-screen';
 import { useSession } from '@/components/session';
 import { api, ApiError } from '@/lib/api';
-type Provider={id:string;name:string;categories:string[];specialties:string[];neighborhoods:string[];availability:string;city:string;state:string};
+type Provider={id:string;name:string;categories:string[];specialties:string[];neighborhoods:string[];coverageLabels?:string[];availability:string;city:string;state:string};
 export default function SearchScreen(){
  const catalog=useCatalog();
  const {session,setSession}=useSession();
@@ -38,7 +38,7 @@ export default function SearchScreen(){
   <View style={s.group}><Text style={s.label}>Bairro ou quadra</Text><SelectionField label="Bairro ou quadra" options={catalog.data?.neighborhoods??[]} values={neighborhood?[neighborhood]:[]} onChange={selected=>setNeighborhood(selected[0]??'')} placeholder="Todas as localidades de Palmas" disabled={busy||!catalog.data}/></View>
   <Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={s.button} onPress={()=>search()}><Text style={s.buttonText}>{busy?'Buscando…':'Buscar prestadores'}</Text></Pressable>
   {message?<Text accessibilityRole="alert" style={styles.note}>{message}</Text>:null}
-  {providers.map(provider=><View key={provider.id} style={styles.card}><Text style={styles.cardTitle}>{provider.name}</Text><Text style={styles.field}>{provider.categories.join(' · ')}</Text><Text style={styles.note}>{provider.neighborhoods.join(', ')} · {provider.city} – {provider.state}</Text><Pressable accessibilityRole="button" accessibilityState={{expanded:expanded===provider.id}} style={s.toggle} onPress={()=>setExpanded(old=>old===provider.id?null:provider.id)}><Text style={s.label}>{expanded===provider.id?'Fechar perfil':'Ver perfil profissional'}</Text></Pressable>{expanded===provider.id?<><Text style={s.label}>Especialidades</Text><Text style={styles.field}>{provider.specialties.join(', ')}</Text><Text style={s.label}>Disponibilidade informada</Text><Text style={styles.field}>{provider.availability}</Text><Text style={styles.note}>As avaliações estarão disponíveis após a implementação dos atendimentos e avaliações.</Text></>:null}</View>)}
+  {providers.map(provider=><View key={provider.id} style={styles.card}><Text style={styles.cardTitle}>{provider.name}</Text><Text style={styles.field}>{provider.categories.join(' · ')}</Text><Text style={styles.note}>{(provider.coverageLabels??provider.neighborhoods).join(', ')} · {provider.city} – {provider.state}</Text><Pressable accessibilityRole="button" accessibilityState={{expanded:expanded===provider.id}} style={s.toggle} onPress={()=>setExpanded(old=>old===provider.id?null:provider.id)}><Text style={s.label}>{expanded===provider.id?'Fechar perfil':'Ver perfil profissional'}</Text></Pressable>{expanded===provider.id?<><Text style={s.label}>Especialidades</Text><Text style={styles.field}>{provider.specialties.join(', ')}</Text><Text style={s.label}>Disponibilidade informada</Text><Text style={styles.field}>{provider.availability}</Text><Text style={styles.note}>As avaliações estarão disponíveis após a implementação dos atendimentos e avaliações.</Text></>:null}</View>)}
   {more?<Pressable accessibilityRole="button" disabled={busy} style={s.toggle} onPress={()=>search(page+1)}><Text style={s.label}>{busy?'Carregando…':'Ver mais prestadores'}</Text></Pressable>:null}
  </ScrollView></SafeAreaView>;
 }

@@ -1,4 +1,5 @@
-import { isCategory, isNeighborhood, categorySpecialties } from './catalog.ts';
+import { isCoverage } from './coverage.ts';
+import { isCategory, categorySpecialties } from './catalog.ts';
 import { validCpf } from './customer-validation.ts';
 export class ProviderInputError extends Error {
  fields: Record<string,string>;
@@ -43,7 +44,8 @@ export function validateProvider(input: unknown) {
  };
  const categories=list('categories',20),specialties=list('specialties',20),neighborhoods=list('neighborhoods',50),availability=text('availability',500);
  if (categories.some(item=>!isCategory(item))) errors.categories='Selecione as categorias da lista.';
- if (neighborhoods.some(item=>!isNeighborhood(item))) errors.neighborhoods='Selecione os bairros e quadras da lista.';
+ if (neighborhoods.some(item=>!isCoverage(item))) errors.neighborhoods='Selecione as regiões, os bairros ou as quadras da lista.';
+ if (neighborhoods.includes('CIDADE:PALMAS') && neighborhoods.length !== 1) errors.neighborhoods='Toda Palmas já inclui as demais áreas.';
  const allowedSpecialties=categorySpecialties(categories);
  if (specialties.some(item=>!allowedSpecialties.has(item))) errors.specialties='Selecione especialidades das categorias escolhidas.';
  if (Object.keys(errors).length) throw new ProviderInputError(errors);

@@ -1,3 +1,4 @@
+import { matchingCoverage, coverageLabel } from './coverage.ts';
 import { Router } from 'express';
 import { bearerToken, tokenHash, databaseAuthStore, type AuthStore } from './auth.ts';
 import { createDatabasePool } from './database.ts';
@@ -22,8 +23,8 @@ export function searchQuery(query: Record<string,unknown>) {
  const page=query.page===undefined?'1':query.page;
  if(typeof page!=='string'||!/^\d{1,4}$/.test(page)||Number(page)<1)throw new Error('Página inválida.');
  return {
-  text: `SELECT account_id AS id, full_name AS name, categories, specialties, neighborhoods, availability, city, state FROM maridao.provider_profiles WHERE city='Palmas' AND state='TO' AND ($1='' OR EXISTS (SELECT 1 FROM unnest(categories) AS category WHERE strpos(lower(category),lower($1))>0)) AND ($2='' OR EXISTS (SELECT 1 FROM unnest(neighborhoods) AS neighborhood WHERE strpos(lower(neighborhood),lower($2))>0)) ORDER BY lower(full_name),account_id LIMIT 21 OFFSET $3`,
-  values:[category,neighborhood,(Number(page)-1)*20],
+  text: `SELECT account_id AS id, full_name AS name, categories, specialties, neighborhoods, availability, city, state FROM maridao.provider_profiles WHERE city='Palmas' AND state='TO' AND ($1='' OR EXISTS (SELECT 1 FROM unnest(categories) AS category WHERE strpos(lower(category),lower($1))>0)) AND ($2='' OR EXISTS (SELECT 1 FROM unnest(neighborhoods) AS neighborhood WHERE strpos(lower(neighborhood),lower($2))>0) OR neighborhoods && $4::text[]) ORDER BY lower(full_name),account_id LIMIT 21 OFFSET $3`,
+  values:[category,neighborhood,(Number(page)-1)*20,matchingCoverage(neighborhood)],
   page:Number(page),
  };
 }
@@ -35,6 +36,6 @@ searchRoutes.get('/',async(req,res,next)=>{
   try{query=searchQuery(req.query);}catch{res.status(400).json({error:'Confira os filtros de busca.'});return;}
   pool ??= createDatabasePool();
   const result=await pool.query(query.text,query.values);
-  res.json({providers:result.rows.slice(0,20),page:query.page,hasMore:result.rows.length>20});
+  res.json({providers:result.rows.slice(0,20).map(row=>({...row,coverageLabels:(row.neighborhoods as string[]).map(coverageLabel)})),page:query.page,hasMore:result.rows.length>20});
  }catch(error){next(error);}
 });

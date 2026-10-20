@@ -25,7 +25,7 @@ export function validateRequest(input:unknown,today=localToday()){
   const match=date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   const parsed=new Date(date+'T12:00:00.000Z');
   if(!match||Number(match[1])<1900||!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==date)errors.preferredDate='Informe uma data válida.';
-  else if(date<today)errors.preferredDate='A preferência de data não pode estar no passado.';
+  else if(date<today)errors.preferredDate='Escolha hoje ou uma data futura.';
  }
  if(Object.keys(errors).length)throw new RequestInputError(errors);
  return {category,description,neighborhood,preferredDate:date||null,preferredPeriod:period||null};

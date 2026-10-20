@@ -88,3 +88,9 @@ RF04/UC04.1-UC04.3: cliente autenticado informa categoria, descrição e bairro 
 POST /requests deriva o cliente exclusivamente da sessão, rejeita perfil de prestador e não aceita identificação de outro cliente, cidade ou status no formulário. O PostgreSQL define status Aberta, cidade Palmas e UF TO. Conta vinculada pela chave do perfil de cliente. A tabela não permite atualização ou exclusão pelo usuário da API nesta etapa. A listagem e acompanhamento das solicitações serão desenvolvidos nas próximas etapas. Sem repetição automática de requisições em falhas de conexão; confirmação real de criação depende do teste local.
 
 Aplicar migrations/004_service_requests.sql como postgres antes de testar. Busca e perfil profissional foram confirmados pela usuária no iPhone.
+
+## Refinamento visual da solicitação
+
+A data passa a ser escolhida em calendário em português, com dias anteriores ao dia corrente em Palmas desabilitados, navegação por mês e opção Remover data. Sem nova dependência nativa. A API continua recebendo YYYY-MM-DD; a tela apresenta DD/MM/AAAA.
+
+Aviso de data passada: Escolha hoje ou uma data futura. Texto de apoio: A data é uma preferência, sujeita à combinação com o prestador. A confirmação passa a ser uma tela curta com Solicitação publicada! e Status: Aberta, links para voltar à conta ou criar outra solicitação. Refinamento preserva as regras de RF04.

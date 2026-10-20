@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+*.pem
+*.key
+.expo/
+android/.gradle/
+android/local.properties
+ios/Pods/
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+# Tentativa anterior do Expo SDK 58, preservada somente no computador.
+/apps/mobile/

@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.ts",
     "db:check": "node --env-file=.env src/check-database.ts",
-    "test:unit": "node --test tests/customer.test.ts tests/auth.test.ts tests/provider.test.ts tests/search.test.ts tests/requests.test.ts tests/catalog.test.ts"
+    "test:unit": "node --test tests/customer.test.ts tests/auth.test.ts tests/provider.test.ts tests/search.test.ts tests/requests.test.ts tests/catalog.test.ts tests/proposals.test.ts"
   },
   "keywords": [],
   "author": "",

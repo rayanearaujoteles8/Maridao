@@ -3,9 +3,9 @@ import { Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, View } from '
 import { colors } from './access-screen';
 import { calendarMonth, displayDate, moveMonth, todayInPalmas } from '@/lib/calendar';
 
-type Props = { value: string; onChange: (value: string) => void; disabled?: boolean; error?: string };
+type Props = { label?: string; value: string; onChange: (value: string) => void; disabled?: boolean; error?: string };
 const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-export function DateField({ value, onChange, disabled, error }: Props) {
+export function DateField({ label = 'data de preferência', value, onChange, disabled, error }: Props) {
   const [open, setOpen] = useState(false);
   const today = todayInPalmas();
   const [page, setPage] = useState(() => ({ year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) - 1 }));
@@ -19,7 +19,7 @@ export function DateField({ value, onChange, disabled, error }: Props) {
   }
   const heading = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(page.year, page.month, 1)));
   return <View style={s.field}>
-    <Pressable accessibilityRole="button" accessibilityLabel={value ? `Alterar data de preferência, ${displayDate(value)}` : 'Escolher data de preferência'} accessibilityState={{ disabled }} disabled={disabled} onPress={show} style={({ pressed }) => [s.trigger, error ? s.invalid : undefined, pressed && s.pressed]}>
+    <Pressable accessibilityRole="button" accessibilityLabel={value ? `Alterar ${label}, ${displayDate(value)}` : `Escolher ${label}`} accessibilityState={{ disabled }} disabled={disabled} onPress={show} style={({ pressed }) => [s.trigger, error ? s.invalid : undefined, pressed && s.pressed]}>
       <Text style={[s.dateText, !value && s.placeholder]}>{value ? displayDate(value) : 'Escolher uma data'}</Text><Text style={s.action}>Calendário</Text>
     </Pressable>
     {value ? <Pressable accessibilityRole="button" disabled={disabled} onPress={() => onChange('')} style={s.clear}><Text style={s.clearText}>Remover data</Text></Pressable> : null}

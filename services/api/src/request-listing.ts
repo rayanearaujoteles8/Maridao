@@ -2,7 +2,11 @@ import { bearerToken, tokenHash, databaseAuthStore, type AuthStore, type Profile
 import { neighborhoods } from './catalog.ts';
 import { matchingCoverage } from './coverage.ts';
 
-const regionalMembership = JSON.stringify(Object.fromEntries(neighborhoods.map(item=>[item.value,matchingCoverage(item.value)])));
+export const regionalMembership = JSON.stringify(Object.fromEntries(neighborhoods.map(item=>[item.value,matchingCoverage(item.value)])));
+export const providerEligibility=(membershipParameter:string)=>`r.status='Aberta' AND r.city=p.city AND r.state=p.state AND r.category=ANY(p.categories)
+     AND (r.neighborhood=ANY(p.neighborhoods) OR EXISTS (
+      SELECT 1 FROM jsonb_array_elements_text(COALESCE(${membershipParameter}::jsonb -> r.neighborhood,'[]'::jsonb)) AS area(value)
+      WHERE area.value=ANY(p.neighborhoods)))`;
 export async function requestListUser(header: string|undefined, store: AuthStore=databaseAuthStore) {
  const token=bearerToken(header);
  return token?store.findSession(tokenHash(token)):undefined;
@@ -16,9 +20,6 @@ export function listRequestsQuery(user: Profile, query: Record<string,unknown>) 
  const scope=user.role==='customer'
   ? `FROM maridao.service_requests r WHERE r.customer_id=$1`
   : `FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1
-     WHERE r.status='Aberta' AND r.city=p.city AND r.state=p.state AND r.category=ANY(p.categories)
-     AND (r.neighborhood=ANY(p.neighborhoods) OR EXISTS (
-      SELECT 1 FROM jsonb_array_elements_text(COALESCE($3::jsonb -> r.neighborhood,'[]'::jsonb)) AS area(value)
-      WHERE area.value=ANY(p.neighborhoods)))`;
+     WHERE ${providerEligibility('$3')}`;
  return {text:`SELECT ${fields} ${scope} ORDER BY r.created_at DESC,r.id DESC LIMIT 21 OFFSET $2`, values:user.role==='customer'?[user.id,(Number(page)-1)*20]:[user.id,(Number(page)-1)*20,regionalMembership],page:Number(page)};
 }

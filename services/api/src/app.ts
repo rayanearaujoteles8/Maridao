@@ -1,6 +1,7 @@
 import { coverageOptions } from './coverage.ts';
 import { services, neighborhoods } from './catalog.ts';
 import { requestRoutes } from './requests.ts';
+import { proposalRoutes } from './proposals.ts';
 import { searchRoutes } from './provider-search.ts';
 import { registerProvider } from './providers.ts';
 import { ProviderInputError } from './provider-validation.ts';
@@ -22,6 +23,7 @@ app.get('/health', (_request, response) => {
 app.get('/catalog', (_req, res) => { res.json({ services, neighborhoods, coverageRegions: coverageOptions }); });
 app.use('/auth', authRoutes);
 app.use('/requests', requestRoutes);
+app.use('/requests', proposalRoutes);
 app.use('/providers', searchRoutes);
 app.post('/customers', registrationLimit, async (request, response, next) => {
   if (!request.is('application/json')) { response.status(415).json({ error: 'Envie os dados em JSON.' }); return; }

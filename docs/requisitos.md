@@ -98,3 +98,11 @@ Aviso de data passada: Escolha hoje ou uma data futura. Texto de apoio: A data �
 ## Seleção de serviços e localidades
 
 Por solicitação da usuária, bairros/quadras e serviços passam de texto livre para opções selecionáveis com busca pelo nome. Fonte compartilhada GET /catalog: 380 localidades do cadastro municipal, 26 categorias editoriais e 156 especialidades relacionadas. Aplicado a RF01.1, RF02.1, RF03 e RF04. Fontes e limites em docs/catalogos.md. A API valida as escolhas e preserva registros antigos. Sem novas dependências nativas nem migração SQL.
+
+## Consulta de solicitações
+
+RF05.1 e RF09.1: GET /requests exige sessão e deriva o perfil e a conta do servidor. Para clientes, retorna apenas solicitações da própria conta. Para prestadores, retorna pedidos Abertos de categoria cadastrada e localidade compatível com as áreas de atendimento, incluindo as regiões e Toda Palmas do catálogo. Valores antigos fora do catálogo só correspondem por categoria/localidade exatas; não são convertidos automaticamente.
+
+Consulta paginada de 20 itens, com ordenação por criação e identificador, campos públicos da solicitação e sem dados cadastrais/contato do cliente. Não aceita customerId ou role pela URL. Tela Solicitações acessível na Minha conta, com rótulo conforme o perfil, atualização manual, carregamento de mais resultados e detalhes da descrição/data/período. Consulta renovada ao retornar à tela; sessão inválida encerra acesso. Envio de propostas, aceite, chat e atualização de status continuam para as próximas etapas.
+
+Sem alteração de banco. Verificação de tipos e 23 testes de unidade passaram nesta etapa. A execução direta das consultas no PostgreSQL local foi bloqueada pelo ambiente (EACCES); validação integrada no iPhone ainda necessária. Lint permanece indisponível por ausência de ESLint no ambiente. A revisão dos nomes apresentados para bairros ficou adiada a pedido da usuária.

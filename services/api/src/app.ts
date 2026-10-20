@@ -1,3 +1,4 @@
+import { services, neighborhoods } from './catalog.ts';
 import { requestRoutes } from './requests.ts';
 import { searchRoutes } from './provider-search.ts';
 import { registerProvider } from './providers.ts';
@@ -17,6 +18,7 @@ app.get('/health', (_request, response) => {
   response.set('Cache-Control', 'no-store');
   response.json({ status: 'ok', service: 'maridao-api' });
 });
+app.get('/catalog', (_req, res) => { res.json({ services, neighborhoods }); });
 app.use('/auth', authRoutes);
 app.use('/requests', requestRoutes);
 app.use('/providers', searchRoutes);

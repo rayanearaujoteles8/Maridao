@@ -1,0 +1,314 @@
+[
+  {
+    "value": "Elétrica",
+    "label": "Elétrica",
+    "specialties": [
+      "Troca de tomadas e interruptores",
+      "Instalação de luminárias",
+      "Instalação de chuveiros",
+      "Instalação de ventiladores de teto",
+      "Reparo de circuitos elétricos",
+      "Manutenção de quadros elétricos"
+    ]
+  },
+  {
+    "value": "Hidráulica e encanamento",
+    "label": "Hidráulica e encanamento",
+    "specialties": [
+      "Reparo de vazamentos",
+      "Troca de torneiras e registros",
+      "Instalação de pias e tanques",
+      "Manutenção de vasos sanitários",
+      "Troca de sifões",
+      "Instalação de bombas de água"
+    ]
+  },
+  {
+    "value": "Montagem e desmontagem de móveis",
+    "label": "Montagem e desmontagem de móveis",
+    "specialties": [
+      "Montagem de guarda-roupas",
+      "Montagem de camas",
+      "Montagem de mesas e cadeiras",
+      "Montagem de armários e estantes",
+      "Desmontagem de móveis",
+      "Ajustes e reaperto de móveis"
+    ]
+  },
+  {
+    "value": "Marcenaria e carpintaria",
+    "label": "Marcenaria e carpintaria",
+    "specialties": [
+      "Reparo de portas de madeira",
+      "Reparo de armários",
+      "Troca de dobradiças e corrediças",
+      "Ajuste de gavetas",
+      "Instalação de prateleiras",
+      "Manutenção de móveis de madeira"
+    ]
+  },
+  {
+    "value": "Pintura",
+    "label": "Pintura",
+    "specialties": [
+      "Pintura interna",
+      "Pintura de fachadas",
+      "Pintura de portas e janelas",
+      "Retoques de pintura",
+      "Aplicação de massa corrida",
+      "Pintura decorativa"
+    ]
+  },
+  {
+    "value": "Alvenaria e pequenos reparos",
+    "label": "Alvenaria e pequenos reparos",
+    "specialties": [
+      "Reparo de paredes e reboco",
+      "Reparo de trincas superficiais",
+      "Pequenos reparos em alvenaria",
+      "Assentamento de soleiras",
+      "Reparo de muros",
+      "Reparo de calçadas"
+    ]
+  },
+  {
+    "value": "Pisos e revestimentos",
+    "label": "Pisos e revestimentos",
+    "specialties": [
+      "Assentamento de cerâmica",
+      "Troca de revestimentos",
+      "Rejuntamento",
+      "Instalação de piso laminado",
+      "Instalação de piso vinílico",
+      "Polimento de pisos"
+    ]
+  },
+  {
+    "value": "Gesso e drywall",
+    "label": "Gesso e drywall",
+    "specialties": [
+      "Reparo de forro de gesso",
+      "Instalação de sancas",
+      "Reparo de drywall",
+      "Reparo de molduras",
+      "Instalação de divisórias",
+      "Acabamento de gesso"
+    ]
+  },
+  {
+    "value": "Telhados e calhas",
+    "label": "Telhados e calhas",
+    "specialties": [
+      "Troca de telhas",
+      "Reparo de telhado",
+      "Limpeza de calhas",
+      "Instalação de calhas",
+      "Reparo de rufos",
+      "Vedação de coberturas"
+    ]
+  },
+  {
+    "value": "Impermeabilização e vedação",
+    "label": "Impermeabilização e vedação",
+    "specialties": [
+      "Vedação de janelas",
+      "Vedação de boxes",
+      "Impermeabilização de lajes",
+      "Tratamento de infiltrações",
+      "Aplicação de silicone",
+      "Impermeabilização de áreas molhadas"
+    ]
+  },
+  {
+    "value": "Vidraceiro e esquadrias",
+    "label": "Vidraceiro e esquadrias",
+    "specialties": [
+      "Troca de vidros",
+      "Instalação de espelhos",
+      "Manutenção de boxes",
+      "Reparo de janelas",
+      "Troca de roldanas",
+      "Manutenção de esquadrias"
+    ]
+  },
+  {
+    "value": "Serralheria e solda",
+    "label": "Serralheria e solda",
+    "specialties": [
+      "Reparo de portões",
+      "Reparo de grades",
+      "Solda de estruturas leves",
+      "Instalação de corrimãos",
+      "Manutenção de esquadrias metálicas",
+      "Troca de dobradiças de portões"
+    ]
+  },
+  {
+    "value": "Chaveiro e fechaduras",
+    "label": "Chaveiro e fechaduras",
+    "specialties": [
+      "Troca de fechaduras",
+      "Instalação de fechaduras",
+      "Reparo de fechaduras",
+      "Ajuste de portas",
+      "Instalação de fechadura digital",
+      "Cópia de chaves"
+    ]
+  },
+  {
+    "value": "Ar-condicionado e climatização",
+    "label": "Ar-condicionado e climatização",
+    "specialties": [
+      "Instalação de ar-condicionado",
+      "Limpeza de ar-condicionado",
+      "Manutenção de ar-condicionado",
+      "Reparo de climatizadores",
+      "Instalação de exaustores",
+      "Manutenção de ventiladores"
+    ]
+  },
+  {
+    "value": "Eletrodomésticos e eletroeletrônicos",
+    "label": "Eletrodomésticos e eletroeletrônicos",
+    "specialties": [
+      "Reparo de geladeiras",
+      "Reparo de máquinas de lavar",
+      "Reparo de micro-ondas",
+      "Reparo de fogões",
+      "Instalação de eletrodomésticos",
+      "Reparo de televisores"
+    ]
+  },
+  {
+    "value": "Instalações e fixações",
+    "label": "Instalações e fixações",
+    "specialties": [
+      "Instalação de suportes de TV",
+      "Fixação de quadros e espelhos",
+      "Instalação de cortinas e persianas",
+      "Instalação de varais",
+      "Instalação de acessórios de banheiro",
+      "Instalação de redes de proteção"
+    ]
+  },
+  {
+    "value": "Limpeza residencial e comercial",
+    "label": "Limpeza residencial e comercial",
+    "specialties": [
+      "Limpeza residencial",
+      "Limpeza comercial",
+      "Limpeza pós-obra",
+      "Limpeza de vidros",
+      "Limpeza de caixas-d’água",
+      "Limpeza de áreas externas"
+    ]
+  },
+  {
+    "value": "Higienização e estofados",
+    "label": "Higienização e estofados",
+    "specialties": [
+      "Higienização de sofás",
+      "Higienização de colchões",
+      "Limpeza de tapetes",
+      "Limpeza de cadeiras estofadas",
+      "Reparo de estofados",
+      "Impermeabilização de estofados"
+    ]
+  },
+  {
+    "value": "Jardinagem e paisagismo",
+    "label": "Jardinagem e paisagismo",
+    "specialties": [
+      "Poda de plantas",
+      "Corte de grama",
+      "Manutenção de jardins",
+      "Plantio de mudas",
+      "Instalação de irrigação",
+      "Limpeza de quintais"
+    ]
+  },
+  {
+    "value": "Piscinas",
+    "label": "Piscinas",
+    "specialties": [
+      "Limpeza de piscinas",
+      "Tratamento de água de piscinas",
+      "Manutenção de bombas de piscina",
+      "Reparo de filtros",
+      "Manutenção de aquecimento de piscinas",
+      "Manutenção de iluminação de piscinas"
+    ]
+  },
+  {
+    "value": "Desentupimento e controle de pragas",
+    "label": "Desentupimento e controle de pragas",
+    "specialties": [
+      "Desentupimento de pias",
+      "Desentupimento de ralos",
+      "Desentupimento de vasos",
+      "Limpeza de caixas de gordura",
+      "Dedetização",
+      "Controle de cupins"
+    ]
+  },
+  {
+    "value": "Segurança eletrônica e automação",
+    "label": "Segurança eletrônica e automação",
+    "specialties": [
+      "Instalação de câmeras",
+      "Manutenção de alarmes",
+      "Instalação de interfones",
+      "Automação de portões",
+      "Manutenção de cercas elétricas",
+      "Automação residencial"
+    ]
+  },
+  {
+    "value": "Redes antenas e informática",
+    "label": "Redes antenas e informática",
+    "specialties": [
+      "Instalação de roteadores",
+      "Configuração de Wi-Fi",
+      "Passagem de cabos de rede",
+      "Instalação de antenas",
+      "Instalação de computadores e impressoras",
+      "Manutenção de computadores"
+    ]
+  },
+  {
+    "value": "Plotagem e comunicação visual",
+    "label": "Plotagem e comunicação visual",
+    "specialties": [
+      "Aplicação de adesivos",
+      "Plotagem de móveis",
+      "Plotagem de paredes",
+      "Instalação de placas",
+      "Aplicação de películas",
+      "Remoção de adesivos"
+    ]
+  },
+  {
+    "value": "Energia solar e aquecimento",
+    "label": "Energia solar e aquecimento",
+    "specialties": [
+      "Limpeza de painéis solares",
+      "Manutenção de sistema solar",
+      "Instalação de aquecedores",
+      "Manutenção de aquecedores",
+      "Reparo de aquecimento solar",
+      "Inspeção de conexões do sistema solar"
+    ]
+  },
+  {
+    "value": "Outros reparos e instalações",
+    "label": "Outros reparos e instalações",
+    "specialties": [
+      "Pequenos reparos diversos",
+      "Manutenção preventiva residencial",
+      "Manutenção preventiva comercial",
+      "Ajustes de acessórios domésticos",
+      "Serviços combinados de instalação",
+      "Outros serviços de manutenção"
+    ]
+  }
+]

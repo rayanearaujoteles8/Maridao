@@ -21,7 +21,7 @@ A pasta local apps/mobile é uma tentativa anterior com SDK 58; não faz parte d
 Instale Node.js 24 e PostgreSQL. Na pasta de cada aplicação, execute npm ci.
 
 1. Crie o banco maridao e o usuário limitado maridao_api. Defina a senha interativamente pelo SQL Shell.
-2. Aplique services/api/migrations/001_customer_accounts.sql e 002_sessions.sql, nessa ordem, como postgres. Scripts de primeira instalação: não repetir em um banco já preparado.
+2. Aplique os arquivos services/api/migrations/001_customer_accounts.sql a 004_service_requests.sql, na ordem numérica, como postgres. Scripts de primeira instalação: não repetir em um banco já preparado.
 3. Copie services/api/.env.example para .env e preencha as credenciais localmente. Nunca envie esse arquivo ao GitHub.
 4. Na API: npm run db:check e npm run dev.
 5. Copie apps/mobile-sdk57/.env.example para .env e configure EXPO_PUBLIC_API_URL com o endereço da API. Para acesso no mesmo Wi-Fi, defina HOST no .env do servidor com o IPv4 do computador.
@@ -34,9 +34,9 @@ No aplicativo: npx tsc --noEmit. O lint ainda precisa ser configurado e executad
 
 ## Estado do projeto
 
-Cadastro do cliente, campos obrigatórios e bloqueio de duplicidade testados pela usuária no iPhone. Login, logout e tela privada implementados, com migração de sessões aplicada; validação real no iPhone ainda pendente. Hash de senhas e lógica de login testados em unidade; acesso HTTP do ambiente do agente é restrito.
+Cadastro e login/logout de clientes e prestadores, busca e perfil profissional e criação de solicitações confirmados pela usuária no iPhone. Campos de serviço e localidade agora usam um catálogo pesquisável: 26 categorias, 156 especialidades e 380 bairros, quadras e localidades do cadastro municipal. As listas novas e o calendário aguardam conferência visual no aparelho. Fontes, critérios e limites em docs/catalogos.md.
 
-Pendentes: cadastro de prestador, recuperação de senha, busca, solicitações, propostas, chat, avaliações, notificações e demais fluxos do documento. Alertas de dependências do Expo permanecem em análise; não aplicar npm audit fix --force sem revisar compatibilidade.
+Pendentes: editar/excluir perfis, recuperar senha, propostas, aceite, acompanhamento, chat, avaliações e notificações. O lint ainda não está configurado; alertas de dependências do Expo permanecem em análise.
 
 ## Segurança
 

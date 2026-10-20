@@ -1,0 +1,1927 @@
+{
+  "source": "https://iptu.palmas.to.gov.br/pesquisar-cci/",
+  "collectedAt": "2026-10-20",
+  "description": "Bairros, quadras e localidades do cadastro imobiliário municipal; três entradas canceladas excluídas. Não é um censo de bairros nem garantia de cobertura de áreas ainda não cadastradas.",
+  "items": [
+    {
+      "value": "AANE 20",
+      "label": "AANE 20",
+      "aliases": []
+    },
+    {
+      "value": "AANE 40",
+      "label": "AANE 40",
+      "aliases": []
+    },
+    {
+      "value": "AANO 20",
+      "label": "AANO 20",
+      "aliases": []
+    },
+    {
+      "value": "AASE",
+      "label": "AASE",
+      "aliases": []
+    },
+    {
+      "value": "AASE 50 A",
+      "label": "AASE 50 A",
+      "aliases": []
+    },
+    {
+      "value": "ACNE 01",
+      "label": "ACNE 01",
+      "aliases": []
+    },
+    {
+      "value": "ACNE 11",
+      "label": "ACNE 11",
+      "aliases": []
+    },
+    {
+      "value": "ACNO 11",
+      "label": "ACNO 11",
+      "aliases": []
+    },
+    {
+      "value": "ACNO I",
+      "label": "ACNO I",
+      "aliases": []
+    },
+    {
+      "value": "ACSE 1",
+      "label": "ACSE 1",
+      "aliases": []
+    },
+    {
+      "value": "ACSE 11",
+      "label": "ACSE 11",
+      "aliases": []
+    },
+    {
+      "value": "ACSE 80",
+      "label": "ACSE 80",
+      "aliases": []
+    },
+    {
+      "value": "ACSE 90",
+      "label": "ACSE 90",
+      "aliases": []
+    },
+    {
+      "value": "ACSO 11",
+      "label": "ACSO 11",
+      "aliases": []
+    },
+    {
+      "value": "ACSO 80",
+      "label": "ACSO 80",
+      "aliases": []
+    },
+    {
+      "value": "ACSO 81",
+      "label": "ACSO 81",
+      "aliases": []
+    },
+    {
+      "value": "ACSO 90",
+      "label": "ACSO 90",
+      "aliases": []
+    },
+    {
+      "value": "ACSO 91",
+      "label": "ACSO 91",
+      "aliases": []
+    },
+    {
+      "value": "ACSO I",
+      "label": "ACSO I",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NE 10",
+      "label": "ACSU NE 10",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NE 50",
+      "label": "ACSU NE 50",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NE 60",
+      "label": "ACSU NE 60",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NE 70",
+      "label": "ACSU NE 70",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NO 10",
+      "label": "ACSU NO 10",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NO 13",
+      "label": "ACSU NO 13",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NO 40",
+      "label": "ACSU NO 40",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NO 50",
+      "label": "ACSU NO 50",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NO 60",
+      "label": "ACSU NO 60",
+      "aliases": []
+    },
+    {
+      "value": "ACSU NO 70",
+      "label": "ACSU NO 70",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 10",
+      "label": "ACSU SE 10",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 100",
+      "label": "ACSU SE 100",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 110",
+      "label": "ACSU SE 110",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 120",
+      "label": "ACSU SE 120",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 130",
+      "label": "ACSU SE 130",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 140",
+      "label": "ACSU SE 140",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 150",
+      "label": "ACSU SE 150",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 20",
+      "label": "ACSU SE 20",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 40",
+      "label": "ACSU SE 40",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 60",
+      "label": "ACSU SE 60",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SE 70",
+      "label": "ACSU SE 70",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 10",
+      "label": "ACSU SO 10",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 100",
+      "label": "ACSU SO 100",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 110",
+      "label": "ACSU SO 110",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 120",
+      "label": "ACSU SO 120",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 130",
+      "label": "ACSU SO 130",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 140",
+      "label": "ACSU SO 140",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 161",
+      "label": "ACSU SO 161",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 171",
+      "label": "ACSU SO 171",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 181",
+      "label": "ACSU SO 181",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 191",
+      "label": "ACSU SO 191",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 20",
+      "label": "ACSU SO 20",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 201",
+      "label": "ACSU SO 201",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 40",
+      "label": "ACSU SO 40",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 50",
+      "label": "ACSU SO 50",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 60",
+      "label": "ACSU SO 60",
+      "aliases": []
+    },
+    {
+      "value": "ACSU SO 70",
+      "label": "ACSU SO 70",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 12",
+      "label": "ACSV NE 12",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 13",
+      "label": "ACSV NE 13",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 14",
+      "label": "ACSV NE 14",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 24",
+      "label": "ACSV NE 24",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 41",
+      "label": "ACSV NE 41",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 41 A",
+      "label": "ACSV NE 41 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 51",
+      "label": "ACSV NE 51",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 51 A",
+      "label": "ACSV NE 51 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 53",
+      "label": "ACSV NE 53",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 53 A",
+      "label": "ACSV NE 53 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 54",
+      "label": "ACSV NE 54",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 54 A",
+      "label": "ACSV NE 54 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 61",
+      "label": "ACSV NE 61",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 61 A",
+      "label": "ACSV NE 61 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 63",
+      "label": "ACSV NE 63",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 63 A",
+      "label": "ACSV NE 63 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 64",
+      "label": "ACSV NE 64",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 64 A",
+      "label": "ACSV NE 64 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 71",
+      "label": "ACSV NE 71",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NE 74",
+      "label": "ACSV NE 74",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 12",
+      "label": "ACSV NO 12",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 31",
+      "label": "ACSV NO 31",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 32",
+      "label": "ACSV NO 32",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 32 A",
+      "label": "ACSV NO 32 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 33",
+      "label": "ACSV NO 33",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 41",
+      "label": "ACSV NO 41",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 42 - LO 10",
+      "label": "ACSV NO 42 - LO 10",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 42 - LO 12",
+      "label": "ACSV NO 42 - LO 12",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 43",
+      "label": "ACSV NO 43",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 44",
+      "label": "ACSV NO 44",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 61",
+      "label": "ACSV NO 61",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 71",
+      "label": "ACSV NO 71",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 72",
+      "label": "ACSV NO 72",
+      "aliases": []
+    },
+    {
+      "value": "ACSV NO 73",
+      "label": "ACSV NO 73",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 101",
+      "label": "ACSV SE 101",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 102",
+      "label": "ACSV SE 102",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 111",
+      "label": "ACSV SE 111",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 112",
+      "label": "ACSV SE 112",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 12",
+      "label": "ACSV SE 12",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 121",
+      "label": "ACSV SE 121",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 122",
+      "label": "ACSV SE 122",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 13",
+      "label": "ACSV SE 13",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 14",
+      "label": "ACSV SE 14",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 141 A",
+      "label": "ACSV SE 141 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 141 B",
+      "label": "ACSV SE 141 B",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 142 A",
+      "label": "ACSV SE 142 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 142 B",
+      "label": "ACSV SE 142 B",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 22",
+      "label": "ACSV SE 22",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 23",
+      "label": "ACSV SE 23",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 24",
+      "label": "ACSV SE 24",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 32",
+      "label": "ACSV SE 32",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 41",
+      "label": "ACSV SE 41",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 51",
+      "label": "ACSV SE 51",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 52",
+      "label": "ACSV SE 52",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 61",
+      "label": "ACSV SE 61",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 62",
+      "label": "ACSV SE 62",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 71",
+      "label": "ACSV SE 71",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 72",
+      "label": "ACSV SE 72",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 81",
+      "label": "ACSV SE 81",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 82",
+      "label": "ACSV SE 82",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 91",
+      "label": "ACSV SE 91",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SE 92",
+      "label": "ACSV SE 92",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 101",
+      "label": "ACSV SO 101",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 102",
+      "label": "ACSV SO 102",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 102 A",
+      "label": "ACSV SO 102 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 103",
+      "label": "ACSV SO 103",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 103 A",
+      "label": "ACSV SO 103 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 111",
+      "label": "ACSV SO 111",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 111 A",
+      "label": "ACSV SO 111 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 112",
+      "label": "ACSV SO 112",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 112 A",
+      "label": "ACSV SO 112 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 121- LO 27",
+      "label": "ACSV SO 121- LO 27",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 121- LO 29",
+      "label": "ACSV SO 121- LO 29",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 122",
+      "label": "ACSV SO 122",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 122-A",
+      "label": "ACSV SO 122-A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 22",
+      "label": "ACSV SO 22",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 23",
+      "label": "ACSV SO 23",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 31",
+      "label": "ACSV SO 31",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 32",
+      "label": "ACSV SO 32",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 33",
+      "label": "ACSV SO 33",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 34",
+      "label": "ACSV SO 34",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 41",
+      "label": "ACSV SO 41",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 42",
+      "label": "ACSV SO 42",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 43",
+      "label": "ACSV SO 43",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 44",
+      "label": "ACSV SO 44",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 45",
+      "label": "ACSV SO 45",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 51",
+      "label": "ACSV SO 51",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 52",
+      "label": "ACSV SO 52",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 53",
+      "label": "ACSV SO 53",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 54",
+      "label": "ACSV SO 54",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 61",
+      "label": "ACSV SO 61",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 62",
+      "label": "ACSV SO 62",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 63",
+      "label": "ACSV SO 63",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 64",
+      "label": "ACSV SO 64",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 74 A",
+      "label": "ACSV SO 74 A",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 75",
+      "label": "ACSV SO 75",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 92",
+      "label": "ACSV SO 92",
+      "aliases": []
+    },
+    {
+      "value": "ACSV SO 92 A",
+      "label": "ACSV SO 92 A",
+      "aliases": []
+    },
+    {
+      "value": "AENE 23",
+      "label": "AENE 23",
+      "aliases": []
+    },
+    {
+      "value": "AESE 31",
+      "label": "AESE 31",
+      "aliases": []
+    },
+    {
+      "value": "AESE 34",
+      "label": "AESE 34",
+      "aliases": []
+    },
+    {
+      "value": "ALC NO 14",
+      "label": "ALC NO 14",
+      "aliases": []
+    },
+    {
+      "value": "ALC NO 33",
+      "label": "ALC NO 33",
+      "aliases": []
+    },
+    {
+      "value": "ALC NO 43",
+      "label": "ALC NO 43",
+      "aliases": []
+    },
+    {
+      "value": "ALC SO 141 A - MIRANTE DO LAGO",
+      "label": "ALC SO 141 A - MIRANTE DO LAGO",
+      "aliases": []
+    },
+    {
+      "value": "ALC SO 141 B",
+      "label": "ALC SO 141 B",
+      "aliases": []
+    },
+    {
+      "value": "ALC SO 141-C",
+      "label": "ALC SO 141-C",
+      "aliases": []
+    },
+    {
+      "value": "ALC SO 141-D",
+      "label": "ALC SO 141-D",
+      "aliases": []
+    },
+    {
+      "value": "ALC SO 34",
+      "label": "ALC SO 34",
+      "aliases": []
+    },
+    {
+      "value": "ALC SO 86",
+      "label": "ALC SO 86",
+      "aliases": []
+    },
+    {
+      "value": "AREA DE INTERESSE TURISTICO I",
+      "label": "AREA DE INTERESSE TURISTICO I",
+      "aliases": []
+    },
+    {
+      "value": "AREA DE INTERESSE TURISTICO II",
+      "label": "AREA DE INTERESSE TURISTICO II",
+      "aliases": []
+    },
+    {
+      "value": "AREA DE URBANIZAÇÃO PREFERENCIAL",
+      "label": "AREA DE URBANIZAÇÃO PREFERENCIAL",
+      "aliases": []
+    },
+    {
+      "value": "AREA DE URBANIZAÇÃO RESTRITA I",
+      "label": "AREA DE URBANIZAÇÃO RESTRITA I",
+      "aliases": []
+    },
+    {
+      "value": "AREA URB PRIORITÁRIA I - MAT.CRI 20338 E 22099",
+      "label": "AREA URB PRIORITÁRIA I - MAT.CRI 20338 E 22099",
+      "aliases": []
+    },
+    {
+      "value": "AREA URB. PRIORITARIA I - AV. PARQUE",
+      "label": "AREA URB. PRIORITARIA I - AV. PARQUE",
+      "aliases": []
+    },
+    {
+      "value": "AREA URB. PRIORITARIA I - LOT. BARRA DA TIUBA",
+      "label": "AREA URB. PRIORITARIA I - LOT. BARRA DA TIUBA",
+      "aliases": []
+    },
+    {
+      "value": "AREA URB. PRIORITARIA I - LOT. SANTA FE",
+      "label": "AREA URB. PRIORITARIA I - LOT. SANTA FE",
+      "aliases": []
+    },
+    {
+      "value": "AREA URB. PRIORITARIA I - LOT.CANELA TAQUARUSSU",
+      "label": "AREA URB. PRIORITARIA I - LOT.CANELA TAQUARUSSU",
+      "aliases": []
+    },
+    {
+      "value": "AREA URB. PRIORITARIA II",
+      "label": "AREA URB. PRIORITARIA II",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 12",
+      "label": "ARNE 12",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 13",
+      "label": "ARNE 13",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 14",
+      "label": "ARNE 14",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 24",
+      "label": "ARNE 24",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 41",
+      "label": "ARNE 41",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 51",
+      "label": "ARNE 51 (404 Norte)",
+      "aliases": [
+        "404 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 53",
+      "label": "ARNE 53",
+      "aliases": []
+    },
+    {
+      "value": "ARNE 54",
+      "label": "ARNE 54 (408 Norte)",
+      "aliases": [
+        "408 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 61",
+      "label": "ARNE 61 (504 Norte)",
+      "aliases": [
+        "504 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 63",
+      "label": "ARNE 63 (506 Norte)",
+      "aliases": [
+        "506 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 64",
+      "label": "ARNE 64 (508 Norte)",
+      "aliases": [
+        "508 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 71",
+      "label": "ARNE 71 (604 Norte)",
+      "aliases": [
+        "604 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 74",
+      "label": "ARNE 74 (606 Norte)",
+      "aliases": [
+        "606 Norte"
+      ]
+    },
+    {
+      "value": "ARNE 81 - STR SANTO AMARO",
+      "label": "ARNE 81 - STR SANTO AMARO (Santo Amaro)",
+      "aliases": [
+        "Santo Amaro"
+      ]
+    },
+    {
+      "value": "ARNO 12",
+      "label": "ARNO 12",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 13",
+      "label": "ARNO 13",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 21",
+      "label": "ARNO 21",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 22",
+      "label": "ARNO 22",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 23",
+      "label": "ARNO 23",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 31",
+      "label": "ARNO 31",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 32",
+      "label": "ARNO 32",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 33",
+      "label": "ARNO 33",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 41",
+      "label": "ARNO 41",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 42",
+      "label": "ARNO 42",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 43",
+      "label": "ARNO 43",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 44",
+      "label": "ARNO 44",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 61",
+      "label": "ARNO 61",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 71",
+      "label": "ARNO 71",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 72",
+      "label": "ARNO 72",
+      "aliases": []
+    },
+    {
+      "value": "ARNO 73",
+      "label": "ARNO 73",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 101",
+      "label": "ARSE 101",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 102",
+      "label": "ARSE 102",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 111",
+      "label": "ARSE 111",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 112",
+      "label": "ARSE 112",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 12",
+      "label": "ARSE 12",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 121",
+      "label": "ARSE 121",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 122",
+      "label": "ARSE 122",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 125-A",
+      "label": "ARSE 125-A",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 13",
+      "label": "ARSE 13",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 131",
+      "label": "ARSE 131",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 132",
+      "label": "ARSE 132",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 135",
+      "label": "ARSE 135",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 135-A",
+      "label": "ARSE 135-A",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 14",
+      "label": "ARSE 14",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 141",
+      "label": "ARSE 141",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 141-A",
+      "label": "ARSE 141-A",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 142",
+      "label": "ARSE 142",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 151",
+      "label": "ARSE 151",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 152",
+      "label": "ARSE 152",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 153",
+      "label": "ARSE 153",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 21",
+      "label": "ARSE 21",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 22",
+      "label": "ARSE 22",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 23",
+      "label": "ARSE 23",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 24",
+      "label": "ARSE 24",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 32",
+      "label": "ARSE 32",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 33",
+      "label": "ARSE 33",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 41",
+      "label": "ARSE 41",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 51",
+      "label": "ARSE 51",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 61",
+      "label": "ARSE 61",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 62",
+      "label": "ARSE 62",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 71",
+      "label": "ARSE 71",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 72",
+      "label": "ARSE 72",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 81",
+      "label": "ARSE 81",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 82",
+      "label": "ARSE 82",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 91",
+      "label": "ARSE 91",
+      "aliases": []
+    },
+    {
+      "value": "ARSE 92",
+      "label": "ARSE 92",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 101",
+      "label": "ARSO 101",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 102",
+      "label": "ARSO 102",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 103",
+      "label": "ARSO 103",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 111",
+      "label": "ARSO 111",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 112",
+      "label": "ARSO 112",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 121",
+      "label": "ARSO 121",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 122",
+      "label": "ARSO 122",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 122 ( PARTE )",
+      "label": "ARSO 122 ( PARTE )",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 131",
+      "label": "ARSO 131",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 132 A",
+      "label": "ARSO 132 A",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 14",
+      "label": "ARSO 14",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 14 -CONDOMINIO ALPHAVILLE PALMAS 1",
+      "label": "ARSO 14 -CONDOMINIO ALPHAVILLE PALMAS 1",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 151",
+      "label": "ARSO 151",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 161",
+      "label": "ARSO 161",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 171",
+      "label": "ARSO 171",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 181",
+      "label": "ARSO 181",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 181-A / ARSO 181-B",
+      "label": "ARSO 181-A / ARSO 181-B",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 191",
+      "label": "ARSO 191",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 21",
+      "label": "ARSO 21",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 22",
+      "label": "ARSO 22",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 23",
+      "label": "ARSO 23",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 24",
+      "label": "ARSO 24",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 24 -CONDOMINIO ALPHAVILLE PALMAS 2",
+      "label": "ARSO 24 -CONDOMINIO ALPHAVILLE PALMAS 2",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 31",
+      "label": "ARSO 31",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 32",
+      "label": "ARSO 32",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 33",
+      "label": "ARSO 33",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 34",
+      "label": "ARSO 34",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 41",
+      "label": "ARSO 41",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 42",
+      "label": "ARSO 42",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 43",
+      "label": "ARSO 43",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 44",
+      "label": "ARSO 44",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 45",
+      "label": "ARSO 45",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 52",
+      "label": "ARSO 52",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 53",
+      "label": "ARSO 53",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 54",
+      "label": "ARSO 54",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 61",
+      "label": "ARSO 61",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 62",
+      "label": "ARSO 62",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 63",
+      "label": "ARSO 63",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 64",
+      "label": "ARSO 64",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 71",
+      "label": "ARSO 71",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 74",
+      "label": "ARSO 74",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 75",
+      "label": "ARSO 75",
+      "aliases": []
+    },
+    {
+      "value": "ARSO 92",
+      "label": "ARSO 92",
+      "aliases": []
+    },
+    {
+      "value": "ASR NE 25",
+      "label": "ASR NE 25",
+      "aliases": []
+    },
+    {
+      "value": "ASR NE 55",
+      "label": "ASR NE 55",
+      "aliases": []
+    },
+    {
+      "value": "ASR NE 65",
+      "label": "ASR NE 65",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 105",
+      "label": "ASR SE 105",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 115",
+      "label": "ASR SE 115",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 125",
+      "label": "ASR SE 125",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 15",
+      "label": "ASR SE 15",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 25",
+      "label": "ASR SE 25",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 35 B",
+      "label": "ASR SE 35 B",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 45",
+      "label": "ASR SE 45",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 55",
+      "label": "ASR SE 55",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 65",
+      "label": "ASR SE 65",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 75",
+      "label": "ASR SE 75",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 85",
+      "label": "ASR SE 85",
+      "aliases": []
+    },
+    {
+      "value": "ASR SE 95",
+      "label": "ASR SE 95",
+      "aliases": []
+    },
+    {
+      "value": "AV. TOCANTINS",
+      "label": "AV. TOCANTINS",
+      "aliases": []
+    },
+    {
+      "value": "AVSO 71",
+      "label": "AVSO 71",
+      "aliases": []
+    },
+    {
+      "value": "BURITIRANA",
+      "label": "BURITIRANA",
+      "aliases": []
+    },
+    {
+      "value": "CARIBE RESIDENCE & RESORT 2 ETAPA",
+      "label": "CARIBE RESIDENCE & RESORT 2 ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "CARIBE RESIDENCE RESORT",
+      "label": "CARIBE RESIDENCE RESORT",
+      "aliases": []
+    },
+    {
+      "value": "CONDOMINIO RESIDENCIAL MYRIADE",
+      "label": "CONDOMINIO RESIDENCIAL MYRIADE",
+      "aliases": []
+    },
+    {
+      "value": "CONDOMINIO VILLA BELLA",
+      "label": "CONDOMINIO VILLA BELLA",
+      "aliases": []
+    },
+    {
+      "value": "INDUSTRIAL DE TAQUARALTO",
+      "label": "INDUSTRIAL DE TAQUARALTO",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AEROPORTO",
+      "label": "JARDIM AEROPORTO",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AMERICA I",
+      "label": "JARDIM AMERICA I",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AMERICA II",
+      "label": "JARDIM AMERICA II",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AURENY I",
+      "label": "JARDIM AURENY I",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AURENY II",
+      "label": "JARDIM AURENY II",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AURENY III",
+      "label": "JARDIM AURENY III",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM AURENY IV",
+      "label": "JARDIM AURENY IV",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM BELA VISTA",
+      "label": "JARDIM BELA VISTA",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM CANAÃ",
+      "label": "JARDIM CANAÃ",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM IRENILDA",
+      "label": "JARDIM IRENILDA",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM JANAINA",
+      "label": "JARDIM JANAINA",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM LAILA",
+      "label": "JARDIM LAILA",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM SANTA HELENA",
+      "label": "JARDIM SANTA HELENA",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM SONIA REGINA",
+      "label": "JARDIM SONIA REGINA",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM VITORIA I",
+      "label": "JARDIM VITORIA I",
+      "aliases": []
+    },
+    {
+      "value": "JARDIM VITORIA II",
+      "label": "JARDIM VITORIA II",
+      "aliases": []
+    },
+    {
+      "value": "LAGOA DA EMA",
+      "label": "LAGOA DA EMA",
+      "aliases": []
+    },
+    {
+      "value": "LOT. COQUERINHO 2º ETAPA F. 03",
+      "label": "LOT. COQUERINHO 2º ETAPA F. 03",
+      "aliases": []
+    },
+    {
+      "value": "LOT. ZEIS CHACARA 35 - TAQUARUSSU",
+      "label": "LOT. ZEIS CHACARA 35 - TAQUARUSSU",
+      "aliases": []
+    },
+    {
+      "value": "LOT. ZEIS CHACARA 52 - TAQUARUSSU",
+      "label": "LOT. ZEIS CHACARA 52 - TAQUARUSSU",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO BERTAVILLE",
+      "label": "LOTEAMENTO BERTAVILLE",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO CORREGO JAU",
+      "label": "LOTEAMENTO CORREGO JAU",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO IRMÃ DULCE 1ª ETAPA",
+      "label": "LOTEAMENTO IRMÃ DULCE 1ª ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO JARDIM PAULISTA",
+      "label": "LOTEAMENTO JARDIM PAULISTA",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO LAGO NORTE",
+      "label": "LOTEAMENTO LAGO NORTE",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO LAGO SUL",
+      "label": "LOTEAMENTO LAGO SUL",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO MORADA DO SOL",
+      "label": "LOTEAMENTO MORADA DO SOL",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO RECANTO DAS ARARAS",
+      "label": "LOTEAMENTO RECANTO DAS ARARAS",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SANTA FE (TAQ. 6A ET)",
+      "label": "LOTEAMENTO SANTA FE (TAQ. 6A ET)",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SANTA FE - 2ª ETAPA",
+      "label": "LOTEAMENTO SANTA FE - 2ª ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SANTA FE 4ª ETAPA",
+      "label": "LOTEAMENTO SANTA FE 4ª ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SOL NASCENTE",
+      "label": "LOTEAMENTO SOL NASCENTE",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SONHO MEU",
+      "label": "LOTEAMENTO SONHO MEU",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SONHO NOVO",
+      "label": "LOTEAMENTO SONHO NOVO",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO SUCUPIRA",
+      "label": "LOTEAMENTO SUCUPIRA",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO VALE DO SOL (TAQ. 3A ET FL.01)",
+      "label": "LOTEAMENTO VALE DO SOL (TAQ. 3A ET FL.01)",
+      "aliases": []
+    },
+    {
+      "value": "LOTEAMENTO ÁGUA FRIA",
+      "label": "LOTEAMENTO ÁGUA FRIA",
+      "aliases": []
+    },
+    {
+      "value": "MACROZONA DE ORDENAMENTO CONTROLADO/ REGIAO DE PLANEJ.CENTRO",
+      "label": "MACROZONA DE ORDENAMENTO CONTROLADO/ REGIAO DE PLANEJ.CENTRO",
+      "aliases": []
+    },
+    {
+      "value": "MORADA DO SOL - SETOR 01",
+      "label": "MORADA DO SOL - SETOR 01",
+      "aliases": []
+    },
+    {
+      "value": "MORADA DO SOL - SETOR 02",
+      "label": "MORADA DO SOL - SETOR 02",
+      "aliases": []
+    },
+    {
+      "value": "MORADA DO SOL - SETOR 03",
+      "label": "MORADA DO SOL - SETOR 03",
+      "aliases": []
+    },
+    {
+      "value": "NOVA FLAMBOYANT",
+      "label": "NOVA FLAMBOYANT",
+      "aliases": []
+    },
+    {
+      "value": "NOVA FLAMBOYANT II",
+      "label": "NOVA FLAMBOYANT II",
+      "aliases": []
+    },
+    {
+      "value": "ORLA 14-GRACIOSA",
+      "label": "ORLA 14-GRACIOSA",
+      "aliases": []
+    },
+    {
+      "value": "PALMAS SUL PRIMEIRA ETAPA",
+      "label": "PALMAS SUL PRIMEIRA ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "PALMAS SUL SEGUNDA ETAPA",
+      "label": "PALMAS SUL SEGUNDA ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "RESIDENCIAL AVALON",
+      "label": "RESIDENCIAL AVALON",
+      "aliases": []
+    },
+    {
+      "value": "RESIDENCIAL JARDIM EUROPA",
+      "label": "RESIDENCIAL JARDIM EUROPA",
+      "aliases": []
+    },
+    {
+      "value": "RESIDENCIAL MARIA ROSA",
+      "label": "RESIDENCIAL MARIA ROSA",
+      "aliases": []
+    },
+    {
+      "value": "RESIDENCIAL PARQUE DOS IPES",
+      "label": "RESIDENCIAL PARQUE DOS IPES",
+      "aliases": []
+    },
+    {
+      "value": "RESIDENCIAL POLINESIA",
+      "label": "RESIDENCIAL POLINESIA",
+      "aliases": []
+    },
+    {
+      "value": "RICANATO PALMAS SUL - RPS",
+      "label": "RICANATO PALMAS SUL - RPS",
+      "aliases": []
+    },
+    {
+      "value": "SANTA FE 3ª ETAPA",
+      "label": "SANTA FE 3ª ETAPA",
+      "aliases": []
+    },
+    {
+      "value": "SETOR UNIVERSITARIO",
+      "label": "SETOR UNIVERSITARIO",
+      "aliases": []
+    },
+    {
+      "value": "TAQ. 1A ETAPA FL.01",
+      "label": "TAQ. 1A ETAPA FL.01 (Taquaralto Centro 1ª etapa)",
+      "aliases": [
+        "Taquaralto Centro 1ª etapa"
+      ]
+    },
+    {
+      "value": "TAQ. 1A ETAPA FL.02 (SETOR SUL)",
+      "label": "TAQ. 1A ETAPA FL.02 (SETOR SUL)",
+      "aliases": []
+    },
+    {
+      "value": "TAQ. 1A ETAPA FL.03",
+      "label": "TAQ. 1A ETAPA FL.03",
+      "aliases": []
+    },
+    {
+      "value": "TAQ. 2A ETAPA FL.01",
+      "label": "TAQ. 2A ETAPA FL.01",
+      "aliases": []
+    },
+    {
+      "value": "TAQ. 4A ETAPA FL.01",
+      "label": "TAQ. 4A ETAPA FL.01",
+      "aliases": []
+    },
+    {
+      "value": "TAQ. 5A ETAPA FL.01",
+      "label": "TAQ. 5A ETAPA FL.01",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-12/T-22",
+      "label": "TAQUARI T-12/T-22",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-13/T-23",
+      "label": "TAQUARI T-13/T-23",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-20/T-21",
+      "label": "TAQUARI T-20/T-21",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-30",
+      "label": "TAQUARI T-30",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-31/ T-41",
+      "label": "TAQUARI T-31/ T-41",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-32/T-42",
+      "label": "TAQUARI T-32/T-42",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARI T-33/T-43",
+      "label": "TAQUARI T-33/T-43",
+      "aliases": []
+    },
+    {
+      "value": "TAQUARUSSU",
+      "label": "TAQUARUSSU (Taquaruçu)",
+      "aliases": [
+        "Taquaruçu"
+      ]
+    },
+    {
+      "value": "VISTA ALEGRE E BELO HORIZONTE",
+      "label": "VISTA ALEGRE E BELO HORIZONTE",
+      "aliases": []
+    },
+    {
+      "value": "ZONA DE SERVIÇO LESTE, OESTE I E OESTE II",
+      "label": "ZONA DE SERVIÇO LESTE, OESTE I E OESTE II",
+      "aliases": []
+    },
+    {
+      "value": "ZONA RURAL",
+      "label": "ZONA RURAL",
+      "aliases": []
+    },
+    {
+      "value": "ZUZU PARK 1ª ETAPA",
+      "label": "ZUZU PARK 1ª ETAPA",
+      "aliases": []
+    }
+  ]
+}

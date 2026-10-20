@@ -1,3 +1,4 @@
+import { isNeighborhood } from './catalog.ts';
 export type CustomerInput = { name: string; email: string; phone: string; cpf: string; neighborhood: string; password: string };
 export class InputError extends Error {
   fields: Partial<Record<keyof CustomerInput, string>>;
@@ -32,7 +33,7 @@ export function validateCustomer(input: unknown): CustomerInput {
   if (data.email && (data.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))) errors.email = 'Informe um e-mail válido.';
   if (data.phone && (!/^[\d\s().-]+$/.test(data.phone) || data.phone.length > 30 || !/^\d{10,11}$/.test(data.phone.replace(/\D/g, '')))) errors.phone = 'Informe telefone com DDD, com 10 ou 11 dígitos.';
   if (data.cpf && (!/^[\d.\s-]+$/.test(data.cpf) || data.cpf.length > 20 || !validCpf(data.cpf.replace(/\D/g, '')))) errors.cpf = 'Confira os números do CPF.';
-  if (data.neighborhood.length > 100) errors.neighborhood = 'Use até 100 caracteres.';
+  if (!isNeighborhood(data.neighborhood)) errors.neighborhood = 'Selecione um bairro ou quadra da lista.';
   // Long passphrases are accepted without mandatory symbol/uppercase rules.
   if ([...data.password].length < 8 || [...data.password].length > 128) errors.password = 'Use uma senha de 8 a 128 caracteres.';
   if (Object.keys(errors).length) throw new InputError(errors);

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {validateRequest,RequestInputError,localToday} from '../src/request-validation.ts';
 import {insertRequestQuery,requestCustomer} from '../src/requests.ts';
 import type {AuthStore} from '../src/auth.ts';
-const sample={category:'Montagem',description:'Montar uma estante',neighborhood:'Centro'};
+const sample={category:'Montagem e desmontagem de móveis',description:'Montar uma estante',neighborhood:'JARDIM AURENY I'};
 test('solicitação aceita preferência opcional e rejeita data passada ou inexistente',()=>{
  assert.equal(validateRequest(sample,'2026-10-20').preferredDate,null);
  assert.equal(validateRequest({...sample,preferredDate:'2026-10-20'},'2026-10-20').preferredDate,'2026-10-20');
@@ -20,8 +20,8 @@ test('criação de solicitação exige sessão de cliente',async()=>{
  const store={findSession:async()=>undefined} as unknown as AuthStore;
  assert.equal((await requestCustomer(undefined,store)).status,401);
  assert.equal((await requestCustomer('Bearer '+'a'.repeat(64),store)).status,401);
- store.findSession=async()=>({id:'id',name:'Teste',email:'teste@example.com',city:'Palmas',state:'TO',neighborhood:'Centro',role:'provider'});
+ store.findSession=async()=>({id:'id',name:'Teste',email:'teste@example.com',city:'Palmas',state:'TO',neighborhood:'JARDIM AURENY I',role:'provider'});
  assert.equal((await requestCustomer('Bearer '+'a'.repeat(64),store)).status,403);
- store.findSession=async()=>({id:'id',name:'Teste',email:'teste@example.com',city:'Palmas',state:'TO',neighborhood:'Centro',role:'customer'});
+ store.findSession=async()=>({id:'id',name:'Teste',email:'teste@example.com',city:'Palmas',state:'TO',neighborhood:'JARDIM AURENY I',role:'customer'});
  assert.equal((await requestCustomer('Bearer '+'a'.repeat(64),store)).user?.id,'id');
 });

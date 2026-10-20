@@ -94,3 +94,7 @@ Aplicar migrations/004_service_requests.sql como postgres antes de testar. Busca
 A data passa a ser escolhida em calendário em português, com dias anteriores ao dia corrente em Palmas desabilitados, navegação por mês e opção Remover data. Sem nova dependência nativa. A API continua recebendo YYYY-MM-DD; a tela apresenta DD/MM/AAAA.
 
 Aviso de data passada: Escolha hoje ou uma data futura. Texto de apoio: A data é uma preferência, sujeita à combinação com o prestador. A confirmação passa a ser uma tela curta com Solicitação publicada! e Status: Aberta, links para voltar à conta ou criar outra solicitação. Refinamento preserva as regras de RF04.
+
+## Seleção de serviços e localidades
+
+Por solicitação da usuária, bairros/quadras e serviços passam de texto livre para opções selecionáveis com busca pelo nome. Fonte compartilhada GET /catalog: 380 localidades do cadastro municipal, 26 categorias editoriais e 156 especialidades relacionadas. Aplicado a RF01.1, RF02.1, RF03 e RF04. Fontes e limites em docs/catalogos.md. A API valida as escolhas e preserva registros antigos. Sem novas dependências nativas nem migração SQL.

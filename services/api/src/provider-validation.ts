@@ -1,3 +1,4 @@
+import { isCategory, isNeighborhood, categorySpecialties } from './catalog.ts';
 import { validCpf } from './customer-validation.ts';
 export class ProviderInputError extends Error {
  fields: Record<string,string>;
@@ -41,6 +42,10 @@ export function validateProvider(input: unknown) {
   return [...new Set((value as string[]).map(item=>item.trim()))];
  };
  const categories=list('categories',20),specialties=list('specialties',20),neighborhoods=list('neighborhoods',50),availability=text('availability',500);
+ if (categories.some(item=>!isCategory(item))) errors.categories='Selecione as categorias da lista.';
+ if (neighborhoods.some(item=>!isNeighborhood(item))) errors.neighborhoods='Selecione os bairros e quadras da lista.';
+ const allowedSpecialties=categorySpecialties(categories);
+ if (specialties.some(item=>!allowedSpecialties.has(item))) errors.specialties='Selecione especialidades das categorias escolhidas.';
  if (Object.keys(errors).length) throw new ProviderInputError(errors);
  return {name,email,phone,password,documentType,document,categories,specialties,neighborhoods,availability};
 }

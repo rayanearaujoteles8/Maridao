@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createDecipheriv } from 'node:crypto';
 import { validateProvider, validCnpj, ProviderInputError } from '../src/provider-validation.ts';
 import { protectDocument } from '../src/document-security.ts';
-const sample={name:'Prestador de teste',email:'teste@example.com',phone:'(63) 99999-9999',password:'teste123',documentType:'CPF',document:'529.982.247-25',categories:['Reparos'],specialties:['Montagem'],neighborhoods:['Centro'],availability:'Segunda a sexta'};
+const sample={name:'Prestador de teste',email:'teste@example.com',phone:'(63) 99999-9999',password:'teste123',documentType:'CPF',document:'529.982.247-25',categories:['Montagem e desmontagem de móveis'],specialties:['Montagem de guarda-roupas'],neighborhoods:['JARDIM AURENY I'],availability:'Segunda a sexta'};
 test('valida CPF e CNPJ numérico e alfanumérico',()=>{
  assert.equal(validateProvider(sample).document,'52998224725');
  assert.equal(validCnpj('11222333000181'),true);

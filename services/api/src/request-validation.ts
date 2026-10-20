@@ -1,3 +1,4 @@
+import { isCategory, isNeighborhood } from './catalog.ts';
 export class RequestInputError extends Error {
  fields: Record<string,string>;
  constructor(fields:Record<string,string>){super('Revise os campos informados.');this.fields=fields;}
@@ -27,6 +28,8 @@ export function validateRequest(input:unknown,today=localToday()){
   if(!match||Number(match[1])<1900||!Number.isFinite(parsed.getTime())||parsed.toISOString().slice(0,10)!==date)errors.preferredDate='Informe uma data válida.';
   else if(date<today)errors.preferredDate='Escolha hoje ou uma data futura.';
  }
+ if(!isCategory(category))errors.category='Selecione um serviço da lista.';
+ if(!isNeighborhood(neighborhood))errors.neighborhood='Selecione um bairro ou quadra da lista.';
  if(Object.keys(errors).length)throw new RequestInputError(errors);
  return {category,description,neighborhood,preferredDate:date||null,preferredPeriod:period||null};
 }

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { validateCustomer, InputError } from '../src/customer-validation.ts';
 import { hashPassword } from '../src/password.ts';
-const sample = { name: 'Pessoa de Teste', email: '  TESTE@EXAMPLE.COM ', phone: '(63) 99999-9999', cpf: '529.982.247-25', neighborhood: 'Bairro de teste', password: 'frase de teste longa e unica' };
+const sample = { name: 'Pessoa de Teste', email: '  TESTE@EXAMPLE.COM ', phone: '(63) 99999-9999', cpf: '529.982.247-25', neighborhood: 'JARDIM AURENY I', password: 'frase de teste longa e unica' };
 test('normaliza os dados sem alterar a senha', () => {
   const result = validateCustomer(sample);
   assert.equal(result.email, 'teste@example.com');

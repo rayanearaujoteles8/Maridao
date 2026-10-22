@@ -6,6 +6,10 @@ export class ProgressError extends Error {
  constructor(status:number,message:string){super(message);this.status=status;}
 }
 export type ProgressStatus='Em andamento'|'Concluída';
+export const progressUpdateSql = `UPDATE maridao.service_requests SET status=$2::varchar(30),
+   started_at=CASE WHEN $2::varchar(30)='Em andamento' THEN clock_timestamp() ELSE started_at END,
+   completed_at=CASE WHEN $2::varchar(30)='Concluída' THEN clock_timestamp() ELSE completed_at END
+   WHERE id=$1 AND status=$3 RETURNING id,status,started_at,completed_at`;
 export function validateProgress(user:Profile,id:unknown,input:unknown):ProgressStatus{
  if(user.role!=='provider')throw new ProgressError(403,'Somente o prestador escolhido pode atualizar o atendimento.');
  if(!validRequestId(id))throw new ProgressError(400,'Solicitação inválida.');
@@ -29,10 +33,7 @@ export async function updateProgress(client:Pick<PoolClient,'query'>,user:Profil
   if(current.status===target){await client.query('COMMIT');return {id,...current};}
   const previous=target==='Em andamento'?'Aceita':'Em andamento';
   if(current.status!==previous)throw new ProgressError(409,target==='Concluída'?'Inicie o atendimento antes de concluir.':'Este atendimento não pode ser iniciado nesta etapa.');
-  const result=await client.query(`UPDATE maridao.service_requests SET status=$2,
-   started_at=CASE WHEN $2='Em andamento' THEN clock_timestamp() ELSE started_at END,
-   completed_at=CASE WHEN $2='Concluída' THEN clock_timestamp() ELSE completed_at END
-   WHERE id=$1 AND status=$3 RETURNING id,status,started_at,completed_at`,[id,target,previous]);
+  const result=await client.query(progressUpdateSql,[id,target,previous]);
   if(result.rowCount!==1)throw new ProgressError(409,'O atendimento mudou. Atualize a lista.');
   await client.query('COMMIT');return result.rows[0];
  }catch(error){try{await client.query('ROLLBACK');}catch{}throw error;}

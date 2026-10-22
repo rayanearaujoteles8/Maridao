@@ -5,6 +5,7 @@ import { createDatabasePool } from './database.ts';
 import { RequestInputError, validateRequest } from './request-validation.ts';
 import { registrationLimit } from './registration-limit.ts';
 import { listRequestsQuery, requestListUser } from './request-listing.ts';
+import { neighborhoodLabel } from './catalog.ts';
 export const requestRoutes=Router();
 let pool:Pool|undefined;
 export async function closeRequestDatabase(){if(pool)await pool.end();}
@@ -26,7 +27,7 @@ requestRoutes.get('/',async(req,res,next)=>{
   try{query=listRequestsQuery(user,req.query);}catch{res.status(400).json({error:'Confira os filtros de consulta.'});return;}
   pool ??= createDatabasePool();
   const result=await pool.query(query.text,query.values);
-  res.json({requests:result.rows.slice(0,20),page:query.page,hasMore:result.rows.length>20,role:user.role});
+  res.json({requests:result.rows.slice(0,20).map(row=>({...row,neighborhood_label:neighborhoodLabel(row.neighborhood)})),page:query.page,hasMore:result.rows.length>20,role:user.role});
  }catch(error){next(error);}
 });
 requestRoutes.post('/',registrationLimit,async(req,res,next)=>{

@@ -1751,18 +1751,30 @@
     },
     {
       "value": "MORADA DO SOL - SETOR 01",
-      "label": "MORADA DO SOL - SETOR 01",
-      "aliases": []
+      "label": "Morada do Sol 01",
+      "aliases": [
+        "MORADA DO SOL - SETOR 01",
+        "Morada do Sol I",
+        "Morada do Sol 1"
+      ]
     },
     {
       "value": "MORADA DO SOL - SETOR 02",
-      "label": "MORADA DO SOL - SETOR 02",
-      "aliases": []
+      "label": "Morada do Sol 02",
+      "aliases": [
+        "MORADA DO SOL - SETOR 02",
+        "Morada do Sol II",
+        "Morada do Sol 2"
+      ]
     },
     {
       "value": "MORADA DO SOL - SETOR 03",
-      "label": "MORADA DO SOL - SETOR 03",
-      "aliases": []
+      "label": "Morada do Sol 03",
+      "aliases": [
+        "MORADA DO SOL - SETOR 03",
+        "Morada do Sol III",
+        "Morada do Sol 3"
+      ]
     },
     {
       "value": "NOVA FLAMBOYANT",

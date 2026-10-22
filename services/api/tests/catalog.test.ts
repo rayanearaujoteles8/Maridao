@@ -1,10 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { services, neighborhoods, isNeighborhood, isCategory } from '../src/catalog.ts';
+import { services, neighborhoods, isNeighborhood, isCategory, neighborhoodLabel } from '../src/catalog.ts';
 import { validateCustomer, InputError } from '../src/customer-validation.ts';
 import { validateProvider, ProviderInputError } from '../src/provider-validation.ts';
 import { coverageOptions, matchingCoverage } from '../src/coverage.ts';
 import { searchQuery } from '../src/provider-search.ts';
+import { regionalMembership } from '../src/request-listing.ts';
+
+test('Morada do Sol pertence à cobertura Taquaralto em busca e pedidos, preservando os registros',()=>{
+ const membership=JSON.parse(regionalMembership);
+ for(const number of ['01','02','03']){
+  const value=`MORADA DO SOL - SETOR ${number}`;
+  assert.equal(neighborhoodLabel(value),`Morada do Sol ${number}`);
+  assert.deepEqual(matchingCoverage(value),['CIDADE:PALMAS','REGIAO:TAQUARALTO']);
+  assert.deepEqual(searchQuery({neighborhood:value}).values[3],['CIDADE:PALMAS','REGIAO:TAQUARALTO']);
+  assert.deepEqual(membership[value],['CIDADE:PALMAS','REGIAO:TAQUARALTO']);
+  assert.ok(isNeighborhood(value));
+ }
+ assert.deepEqual(matchingCoverage('LOTEAMENTO MORADA DO SOL'),['CIDADE:PALMAS','REGIAO:TAQUARALTO']);
+ assert.deepEqual(matchingCoverage('TAQUARUSSU'),['CIDADE:PALMAS']);
+});
 
 test('cobertura regional associa localidades e não amplia filtros desconhecidos', () => {
  assert.deepEqual(matchingCoverage('ARNE 63'),['CIDADE:PALMAS','REGIAO:CENTRO']);

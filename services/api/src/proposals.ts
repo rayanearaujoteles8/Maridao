@@ -6,6 +6,7 @@ import {validateProposal,ProposalInputError,validRequestId} from './proposal-val
 import {registrationLimit} from './registration-limit.ts';
 import type {Profile} from './auth.ts';
 import {acceptProposal,AcceptanceError,validateAcceptance} from './proposal-acceptance.ts';
+import {neighborhoodLabel} from './catalog.ts';
 export const proposalRoutes=Router();
 let pool:Pool|undefined;
 export async function closeProposalDatabase(){if(pool)await pool.end();}
@@ -86,6 +87,6 @@ proposalRoutes.get('/:id/proposals',async(req,res,next)=>{
   const request=await pool.query(access.text,access.values);
   if(!request.rows.length){res.status(404).json({error:'Solicitação indisponível.'});return;}
   const result=await pool.query(query.text,query.values);
-  res.json({request:request.rows[0],proposals:result.rows.slice(0,20),role:user.role,page:query.page,hasMore:result.rows.length>20});
+  res.json({request:{...request.rows[0],neighborhood_label:neighborhoodLabel(request.rows[0].neighborhood)},proposals:result.rows.slice(0,20),role:user.role,page:query.page,hasMore:result.rows.length>20});
  }catch(error){next(error);}
 });

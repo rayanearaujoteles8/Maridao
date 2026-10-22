@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {validateRequest,RequestInputError,localToday} from '../src/request-validation.ts';
-import {insertRequestQuery,requestCustomer} from '../src/requests.ts';
+import {createRequest,insertRequestQuery,requestCustomer} from '../src/requests.ts';
 import type {AuthStore} from '../src/auth.ts';
 import {listRequestsQuery,requestListUser} from '../src/request-listing.ts';
 import type {Profile} from '../src/auth.ts';
@@ -62,4 +62,53 @@ test('criação de solicitação exige sessão de cliente',async()=>{
  assert.equal((await requestCustomer('Bearer '+'a'.repeat(64),store)).status,403);
  store.findSession=async()=>({id:'id',name:'Teste',email:'teste@example.com',city:'Palmas',state:'TO',neighborhood:'JARDIM AURENY I',role:'customer'});
  assert.equal((await requestCustomer('Bearer '+'a'.repeat(64),store)).user?.id,'id');
+});
+
+
+test('substituição bloqueia criações concorrentes e cancela apenas os pedidos abertos do cliente/categoria',async()=>{
+ const calls:{text:string;values?:unknown[]}[]=[];
+ const client={query:async(text:string,values?:unknown[])=>{
+  calls.push({text,values});
+  if(text.startsWith('SELECT r.id'))return {rows:[{id:'anterior'}]};
+  if(text.startsWith('INSERT'))return {rows:[{id:'novo',status:'Aberta'}]};
+  return {rows:[]};
+ }};
+ const result=await createRequest(client as any,'cliente',sample);
+ assert.equal(result.cancelledCount,1);
+ assert.equal(result.request.id,'novo');
+ assert.equal(calls[0].text,'BEGIN');
+ assert.match(calls[1].text,/pg_advisory_xact_lock/);
+ assert.deepEqual(calls[1].values,['cliente']);
+ assert.match(calls[2].text,/r.customer_id=\$1/);
+ assert.match(calls[2].text,/r.status='Aberta' AND r.selected_proposal_id IS NULL/);
+ assert.match(calls[2].text,/FOR UPDATE/);
+ assert.deepEqual(calls[2].values,['cliente',sample.category]);
+ assert.match(calls[3].text,/status='Cancelada'/);
+ assert.match(calls[4].text,/status='Pendente'/);
+ assert.equal(calls.at(-1)?.text,'COMMIT');
+});
+
+test('falha na publicação reverte cancelamentos; formulário inválido não inicia transação',async()=>{
+ const calls:string[]=[];
+ const client={query:async(text:string)=>{
+  calls.push(text);
+  if(text.startsWith('SELECT r.id'))return {rows:[{id:'anterior'}]};
+  if(text.startsWith('INSERT'))throw new Error('falha simulada');
+  return {rows:[]};
+ }};
+ await assert.rejects(createRequest(client as any,'cliente',sample),/falha simulada/);
+ assert.equal(calls.at(-1),'ROLLBACK');
+ assert.ok(!calls.includes('COMMIT'));
+ calls.length=0;
+ await assert.rejects(createRequest(client as any,'cliente',{...sample,category:'inválida'}),RequestInputError);
+ assert.equal(calls.length,0);
+});
+
+test('primeiro pedido não altera solicitações nem propostas existentes',async()=>{
+ const calls:string[]=[];
+ const client={query:async(text:string)=>{calls.push(text);return {rows:text.startsWith('INSERT')?[{id:'novo'}]:[]};}};
+ const result=await createRequest(client as any,'cliente',sample);
+ assert.equal(result.cancelledCount,0);
+ assert.ok(!calls.some(text=>text.startsWith('UPDATE')));
+ assert.equal(calls.at(-1),'COMMIT');
 });

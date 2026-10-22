@@ -25,6 +25,7 @@ export default function NewRequest() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [published, setPublished] = useState(false);
+  const [cancelledCount,setCancelledCount]=useState(0);
   const pending = useRef(false);
   const scroll = useRef<ScrollView>(null);
   if (!session) return <Redirect href="/entrar" />;
@@ -42,7 +43,8 @@ export default function NewRequest() {
     if (Object.keys(next).length) { setMessage('Confira os campos destacados.'); return; }
     pending.current = true; setBusy(true); Keyboard.dismiss();
     try {
-      await api('/requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` }, body: JSON.stringify(values) });
+      const result=await api('/requests', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` }, body: JSON.stringify(values) });
+      setCancelledCount(result.cancelledCount ?? 0);
       setValues(empty); setPublished(true); scroll.current?.scrollTo({ y: 0, animated: true });
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) setSession(null);
@@ -58,6 +60,7 @@ export default function NewRequest() {
       {published ? <View style={s.success}>
         <View style={s.check} accessible={false}><Text style={s.checkText}>✓</Text></View>
         <Text accessibilityRole="header" style={s.title}>Solicitação publicada!</Text>
+        {cancelledCount > 0 ? <Text style={s.subtitle}>{cancelledCount === 1 ? 'O pedido aberto anterior desta categoria foi cancelado.' : 'Os ' + cancelledCount + ' pedidos abertos anteriores desta categoria foram cancelados.'}</Text> : null}
         <View style={s.status}><Text style={s.statusText}>Status: Aberta</Text></View>
         <Link href="/minha-conta" style={s.returnLink}>Voltar para minha conta</Link>
         <Pressable accessibilityRole="button" onPress={() => { setPublished(false); setMessage(''); }} style={s.secondary}><Text style={s.secondaryText}>Criar outra solicitação</Text></Pressable>
@@ -78,6 +81,7 @@ export default function NewRequest() {
           <View style={s.group}><Text style={s.label}>Período de preferência</Text><TextInput accessibilityLabel="Período de preferência, opcional" editable={!busy} style={s.input} value={values.preferredPeriod} onChangeText={text => change('preferredPeriod', text)} placeholder="Ex.: pela manhã" placeholderTextColor="#6B7561" maxLength={100} />{errors.preferredPeriod ? <Text style={s.error}>{errors.preferredPeriod}</Text> : null}</View>
           <Text style={s.hint}>A data é uma preferência, sujeita à combinação com o prestador.</Text>
         </View>
+        <Text style={s.hint}>Ao publicar, seus pedidos anteriores desta categoria que ainda estiverem abertos serão cancelados. Pedidos com proposta aceita serão mantidos.</Text>
         {message ? <Text accessibilityRole="alert" style={s.errorSummary}>{message}</Text> : null}
         <Pressable accessibilityRole="button" accessibilityState={{ disabled: busy, busy }} disabled={busy} onPress={submit} style={({ pressed }) => [s.button, (pressed || busy) && { opacity: 0.7 }]}><Text style={s.buttonText}>{busy ? 'Publicando…' : 'Publicar solicitação'}</Text></Pressable>
       </>}

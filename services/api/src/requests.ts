@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import type { Pool } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import { bearerToken, tokenHash, databaseAuthStore, type AuthStore } from './auth.ts';
 import { createDatabasePool } from './database.ts';
 import { RequestInputError, validateRequest } from './request-validation.ts';
 import { registrationLimit } from './registration-limit.ts';
 import { listRequestsQuery, requestListUser } from './request-listing.ts';
+import { categorySql } from './catalog-compatibility.ts';
 import { neighborhoodLabel } from './catalog.ts';
 import { ProgressError,validateProgress,updateProgress } from './request-progress.ts';
 export const requestRoutes=Router();
@@ -18,6 +19,24 @@ export async function requestCustomer(header:string|undefined,store:AuthStore=da
 export function insertRequestQuery(customerId:string,input:unknown){
  const data=validateRequest(input);
  return {text:`INSERT INTO maridao.service_requests (customer_id,category,description,neighborhood,preferred_date,preferred_period) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id,category,description,neighborhood,city,state,to_char(preferred_date,'YYYY-MM-DD') AS preferred_date,preferred_period,status,created_at`,values:[customerId,data.category,data.description,data.neighborhood,data.preferredDate,data.preferredPeriod]};
+}
+// Lock requests in the same order used by proposal sending/acceptance. The
+// transaction lock serializes two creations even when no previous request exists.
+export async function createRequest(client:Pick<PoolClient,'query'>,customerId:string,input:unknown){
+ const insert=insertRequestQuery(customerId,input);
+ await client.query('BEGIN');
+ try{
+  await client.query("SELECT pg_advisory_xact_lock(hashtextextended('request-create:' || $1::text,0))",[customerId]);
+  const previous=await client.query(`SELECT r.id FROM maridao.service_requests r WHERE r.customer_id=$1 AND ${categorySql('r.category')}=${categorySql('$2::text')} AND r.status='Aberta' AND r.selected_proposal_id IS NULL ORDER BY r.id FOR UPDATE`,[customerId,insert.values[1]]);
+  const ids=previous.rows.map(row=>row.id);
+  if(ids.length){
+   await client.query(`UPDATE maridao.service_requests SET status='Cancelada' WHERE customer_id=$1 AND id=ANY($2::uuid[]) AND status='Aberta' AND selected_proposal_id IS NULL`,[customerId,ids]);
+   await client.query(`UPDATE maridao.proposals SET status='Cancelada' WHERE request_id=ANY($1::uuid[]) AND status='Pendente'`,[ids]);
+  }
+  const result=await client.query(insert.text,insert.values);
+  await client.query('COMMIT');
+  return {request:result.rows[0],cancelledCount:ids.length};
+ }catch(error){try{await client.query('ROLLBACK');}catch{}throw error;}
 }
 requestRoutes.get('/',async(req,res,next)=>{
  try {
@@ -48,10 +67,10 @@ requestRoutes.post('/',registrationLimit,async(req,res,next)=>{
   const access=await requestCustomer(req.headers.authorization);
   if(access.status!==200||!access.user){res.status(access.status).json({error:access.status===401?'Entre na sua conta para continuar.':'Somente clientes podem criar solicitações.'});return;}
   if(!req.is('application/json')){res.status(415).json({error:'Envie os dados em JSON.'});return;}
-  const query=insertRequestQuery(access.user.id,req.body);
+  insertRequestQuery(access.user.id,req.body);
   pool ??= createDatabasePool();
-  const result=await pool.query(query.text,query.values);
-  res.status(201).json({message:'Solicitação criada com sucesso.',request:result.rows[0]});
+  const client=await pool.connect();
+  try{res.status(201).json({message:'Solicitação criada com sucesso.',...await createRequest(client,access.user.id,req.body)});}finally{client.release();}
  }catch(error){
   if(error instanceof RequestInputError){res.status(400).json({error:error.message,fields:error.fields});return;}
   next(error);

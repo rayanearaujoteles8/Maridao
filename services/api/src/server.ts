@@ -14,8 +14,12 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
 const server = app.listen(port, host, () => {
   console.log(`API do Maridão iniciada em http://${host}:${port}`);
 });
-server.on('error', () => {
-  console.error('Não foi possível iniciar a API. Verifique se a porta está disponível.');
+server.on('error', (error: NodeJS.ErrnoException) => {
+  const reason = error.code === 'EADDRINUSE' ? 'A porta já está sendo usada por outro processo.'
+    : error.code === 'EADDRNOTAVAIL' ? 'O IP configurado em HOST não pertence a este computador. Confira o IPv4 do Wi-Fi.'
+    : error.code === 'EACCES' || error.code === 'EPERM' ? 'O sistema não permitiu abrir esta porta/endereço.'
+    : 'Confira o endereço HOST e a porta configurados.';
+  console.error(`Não foi possível iniciar a API (${error.code ?? 'erro desconhecido'}). ${reason}`);
   process.exitCode = 1;
 });
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {

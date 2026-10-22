@@ -20,6 +20,6 @@ export function listRequestsQuery(user: Profile, query: Record<string,unknown>) 
  const scope=user.role==='customer'
   ? `FROM maridao.service_requests r WHERE r.customer_id=$1`
   : `FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1
-     WHERE ${providerEligibility('$3')}`;
+     WHERE (${providerEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=p.account_id)`;
  return {text:`SELECT ${fields} ${scope} ORDER BY r.created_at DESC,r.id DESC LIMIT 21 OFFSET $2`, values:user.role==='customer'?[user.id,(Number(page)-1)*20]:[user.id,(Number(page)-1)*20,regionalMembership],page:Number(page)};
 }

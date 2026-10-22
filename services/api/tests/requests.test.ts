@@ -18,7 +18,7 @@ test('listagem limita cliente à própria conta e não aceita identidade ou perf
  for(const field of ['customer_id,','password_hash','email','phone','document_encrypted'])assert.ok(!query.text.includes(field));
 });
 
-test('prestador vê somente pedidos abertos da categoria e cobertura do próprio perfil',()=>{
+test('prestador vê pedidos abertos compatíveis ou pedidos com a própria proposta',()=>{
  const query=listRequestsQuery({id:'prestador-da-sessao',role:'provider'} as Profile,{});
  assert.equal(query.values[0],'prestador-da-sessao');
  assert.match(query.text,/p.account_id=\$1/);
@@ -26,6 +26,7 @@ test('prestador vê somente pedidos abertos da categoria e cobertura do próprio
  assert.match(query.text,/r.category=ANY\(p.categories\)/);
  assert.match(query.text,/r.neighborhood=ANY\(p.neighborhoods\)/);
  assert.match(query.text,/area.value=ANY\(p.neighborhoods\)/);
+ assert.match(query.text,/own.request_id=r.id AND own.provider_id=p.account_id/);
  const membership=JSON.parse(query.values[2] as string);
  assert.deepEqual(membership['ARNE 63'],['CIDADE:PALMAS','REGIAO:CENTRO']);
  assert.deepEqual(membership['JARDIM AURENY I'],['CIDADE:PALMAS','REGIAO:AURENYS']);

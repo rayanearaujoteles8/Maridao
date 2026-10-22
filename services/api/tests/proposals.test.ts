@@ -1,10 +1,75 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {validateProposal,ProposalInputError,validRequestId} from '../src/proposal-validation.ts';
-import {insertProposalQuery,proposalAccessQuery,listProposalsQuery} from '../src/proposals.ts';
+import {insertProposalQuery,proposalAccessQuery,listProposalsQuery,sendProposal} from '../src/proposals.ts';
+import {acceptProposal,validateAcceptance,AcceptanceError} from '../src/proposal-acceptance.ts';
 import type {Profile} from '../src/auth.ts';
+import type {PoolClient} from 'pg';
 const id='11111111-1111-4111-8111-111111111111';
 const sample={amount:'150,25',description:'Pintura de uma parede',estimatedDuration:'Um dia',validUntil:'2099-12-31'};
+const proposalId='22222222-2222-4222-8222-222222222222';
+const customer={id:'cliente-da-sessao',role:'customer'} as Profile;
+function scriptedDatabase(steps:{match:RegExp;rows?:unknown[];rowCount?:number;fail?:boolean;values?:unknown[]}[]){
+ const commands:string[]=[];
+ const query=async(text:string,values?:unknown[])=>{
+  commands.push(text);
+  const step=steps.shift();assert.ok(step,`Comando inesperado: ${text}`);assert.match(text,step.match);
+  if(step.values)assert.deepEqual(values,step.values);
+  if(step.fail)throw new Error('Falha simulada');
+  return {rows:step.rows??[],rowCount:step.rowCount??0};
+ };
+ return {client:{query} as unknown as Pick<PoolClient,'query'>,commands,done:()=>assert.equal(steps.length,0)};
+}
+
+test('aceite exige cliente, identificadores válidos e formulário sem conta/status enviados',()=>{
+ assert.throws(()=>validateAcceptance({...customer,role:'provider'},id,proposalId,{}),AcceptanceError);
+ assert.throws(()=>validateAcceptance(customer,'outro',proposalId,{}),AcceptanceError);
+ for(const input of [undefined,[],{customerId:'outro'},{status:'Aceita'}])assert.throws(()=>validateAcceptance(customer,id,proposalId,input),AcceptanceError);
+ validateAcceptance(customer,id,proposalId,{});
+});
+
+test('aceite bloqueia pedido, confere validade e grava escolha e demais status juntos',async()=>{
+ const db=scriptedDatabase([
+  {match:/^BEGIN$/},
+  {match:/customer_id=\$2 FOR UPDATE/,values:[id,customer.id],rows:[{status:'Aberta',selected_proposal_id:null}]},
+  {match:/clock_timestamp\(\).*request_id=\$1 AND id=\$2 FOR UPDATE/,values:[id,proposalId],rows:[{status:'Pendente',expired:false}]},
+  {match:/SET status='Não selecionada'.*status='Pendente'/,values:[id,proposalId],rowCount:2},
+  {match:/SET status='Aceita'/,values:[id,proposalId],rowCount:1},
+  {match:/selected_proposal_id=\$2.*customer_id=\$3/,values:[id,proposalId,customer.id],rowCount:1},
+  {match:/^COMMIT$/},
+ ]);
+ assert.deepEqual(await acceptProposal(db.client,customer,id,proposalId),{status:'Aceita',proposalId});db.done();
+});
+
+test('pedido de outro cliente, proposta de outro pedido, expirada ou retirada não grava nada',async()=>{
+ for(const state of ['other-customer','other-request','expired','withdrawn','already-selected']){
+  const steps:{match:RegExp;rows?:unknown[]}[]=[{match:/^BEGIN$/},{match:/customer_id=\$2 FOR UPDATE/,rows:state==='other-customer'?[]:[{status:state==='already-selected'?'Aceita':'Aberta',selected_proposal_id:'outra'}]}];
+  if(!['other-customer','already-selected'].includes(state))steps.push({match:/request_id=\$1 AND id=\$2 FOR UPDATE/,rows:state==='other-request'?[]:[{status:state==='withdrawn'?'Retirada':'Pendente',expired:state==='expired'}]});
+  steps.push({match:/^ROLLBACK$/});
+  const db=scriptedDatabase(steps);
+  await assert.rejects(()=>acceptProposal(db.client,customer,id,proposalId),AcceptanceError);
+  assert.ok(!db.commands.some(command=>command.startsWith('UPDATE')));db.done();
+ }
+});
+
+test('repetir a confirmação da mesma proposta é seguro mesmo após o fim da validade',async()=>{
+ const db=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE/,rows:[{status:'Aceita',selected_proposal_id:proposalId}]},{match:/COMMIT/}]);
+ assert.equal((await acceptProposal(db.client,customer,id,proposalId)).proposalId,proposalId);db.done();
+});
+
+test('falha ao vincular pedido desfaz toda a transação',async()=>{
+ const db=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE/,rows:[{status:'Aberta'}]},{match:/FOR UPDATE/,rows:[{status:'Pendente',expired:false}]},{match:/Não selecionada/},{match:/SET status='Aceita'/,rowCount:1},{match:/selected_proposal_id/,fail:true},{match:/ROLLBACK/}]);
+ await assert.rejects(()=>acceptProposal(db.client,customer,id,proposalId));
+ assert.ok(!db.commands.includes('COMMIT'));db.done();
+});
+
+test('envio bloqueia a mesma solicitação antes do INSERT e rejeita pedido já aceito',async()=>{
+ const sent={id:proposalId,status:'Pendente'};
+ const db=scriptedDatabase([{match:/BEGIN/},{match:/r.status='Aberta'.*FOR UPDATE OF r/s,rows:[{id}]},{match:/INSERT INTO maridao.proposals/,rows:[sent]},{match:/COMMIT/}]);
+ assert.deepEqual(await sendProposal(db.client,'prestador',id,sample),sent);db.done();
+ const closed=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE OF r/,rows:[]},{match:/ROLLBACK/}]);
+ await assert.rejects(()=>sendProposal(closed.client,'prestador',id,sample),AcceptanceError);closed.done();
+});
 test('proposta mantém centavos exatos e valida valor, prazo e validade',()=>{
  assert.equal(validateProposal(sample).amount,'150.25');
  assert.equal(validateProposal({...sample,amount:'0,01'}).amount,'0.01');

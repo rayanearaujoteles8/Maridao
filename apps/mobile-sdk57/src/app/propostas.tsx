@@ -1,6 +1,6 @@
 import {useCallback,useRef,useState} from 'react';
 import {Link,Redirect,useFocusEffect,useLocalSearchParams} from 'expo-router';
-import {Keyboard,Platform,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
+import {Alert,Keyboard,Platform,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {colors,styles} from '@/components/access-screen';
 import {DateField} from '@/components/date-field';
@@ -44,12 +44,37 @@ export default function ProposalsScreen(){
   finally{if(run===generation.current){pending.current=false;setBusy(false);}}
   if(sent)await load();
  }
+ async function accept(proposalId:string){
+  if(!session||pending.current||data?.role!=='customer'||data.request.status!=='Aberta')return;
+  const run=generation.current;pending.current=true;setBusy(true);setError('');setMessage('');
+  let accepted=false;
+  try{
+   await api(`/requests/${encodeURIComponent(id)}/proposals/${encodeURIComponent(proposalId)}/accept`,{method:'POST',headers:{Authorization:`Bearer ${session.token}`,'Content-Type':'application/json'},body:'{}'});
+   if(run!==generation.current)return;
+   setData(old=>old?{...old,request:{...old.request,status:'Aceita'},proposals:old.proposals.map(item=>({...item,status:item.id===proposalId?'Aceita':item.status==='Pendente'?'Não selecionada':item.status}))}:old);
+   setMessage('Proposta aceita!');accepted=true;
+  }catch(failure){
+   if(run!==generation.current)return;
+   if(failure instanceof ApiError&&failure.status===401)setSession(null);
+   else setError(failure instanceof Error?failure.message:'Não foi possível confirmar o aceite. Atualize as propostas para conferir o resultado.');
+  }finally{if(run===generation.current){pending.current=false;setBusy(false);}}
+  if(accepted)await load();
+ }
+ function confirmAcceptance(proposal:Proposal){
+  if(pending.current)return;
+  const run=generation.current;
+  const amount=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(proposal.amount));
+  Alert.alert('Aceitar esta proposta?',`${proposal.provider_name} · ${amount}\nAs demais propostas deste pedido ficarão como Não selecionadas.`,[
+   {text:'Voltar',style:'cancel'},
+   {text:'Confirmar aceite',onPress:()=>{if(run===generation.current)void accept(proposal.id);}},
+  ]);
+ }
  if(!session)return <Redirect href="/entrar"/>;
  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={[styles.page,{paddingBottom:64}]} automaticallyAdjustKeyboardInsets keyboardDismissMode={Platform.OS==='ios'?'interactive':'on-drag'} keyboardShouldPersistTaps="handled">
   <Link href="./solicitacoes" style={styles.back}>‹ Voltar às solicitações</Link>
   <Text accessibilityRole="header" style={styles.title}>{data?.role==='provider'?'Sua proposta':'Propostas recebidas'}</Text>
   {!validId?<Text style={s.error}>Solicitação inválida. Volte à lista e tente novamente.</Text>:null}
-  {data?<View style={styles.card}><Text style={styles.cardTitle}>{data.request.category}</Text><Text style={styles.field}>{data.request.neighborhood}</Text><Text style={styles.description}>{data.request.description}</Text></View>:null}
+  {data?<View style={styles.card}><Text style={styles.cardTitle}>{data.request.category}</Text><Text style={styles.field}>{data.request.neighborhood}</Text><Text style={styles.description}>{data.request.description}</Text><Text style={s.label}>Status do pedido: {data.request.status}</Text></View>:null}
   {message?<Text accessibilityRole="alert" style={s.success}>{message}</Text>:null}
   {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
   {validId?<Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={s.secondary} onPress={()=>load()}><Text style={s.label}>{busy?'Carregando…':'Atualizar propostas'}</Text></Pressable>:null}
@@ -58,6 +83,8 @@ export default function ProposalsScreen(){
    <Text style={s.label}>{proposal.expired&&proposal.status==='Pendente'?'Validade encerrada':proposal.status}</Text>
    <Text style={styles.description}>{proposal.description}</Text><Text style={s.label}>Prazo estimado</Text><Text style={styles.field}>{proposal.estimated_duration}</Text>
    <Text style={s.label}>Válida até</Text><Text style={styles.field}>{proposal.valid_until.split('-').reverse().join('/')}</Text>
+   {data.role==='customer'&&data.request.status==='Aberta'&&proposal.status==='Pendente'&&!proposal.expired?<Pressable accessibilityRole="button" accessibilityLabel={`Aceitar proposta de ${proposal.provider_name}`} accessibilityState={{disabled:busy,busy}} disabled={busy} style={[s.button,busy&&{opacity:0.6}]} onPress={()=>confirmAcceptance(proposal)}><Text style={s.buttonText}>Aceitar proposta</Text></Pressable>:null}
+
   </View>)}
   {data?.role==='customer'&&!data.proposals.length?<Text style={styles.description}>Você ainda não recebeu propostas para este pedido.</Text>:null}
   {data?.role==='provider'&&!data.proposals.length&&data.request.status==='Aberta'&&!message?<View style={s.form}>

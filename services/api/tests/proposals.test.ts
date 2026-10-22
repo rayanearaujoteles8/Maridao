@@ -53,8 +53,10 @@ test('pedido de outro cliente, proposta de outro pedido, expirada ou retirada n�
 });
 
 test('repetir a confirmação da mesma proposta é seguro mesmo após o fim da validade',async()=>{
- const db=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE/,rows:[{status:'Aceita',selected_proposal_id:proposalId}]},{match:/COMMIT/}]);
- assert.equal((await acceptProposal(db.client,customer,id,proposalId)).proposalId,proposalId);db.done();
+ for(const status of ['Aceita','Em andamento','Concluída']){
+  const db=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE/,rows:[{status,selected_proposal_id:proposalId}]},{match:/COMMIT/}]);
+  assert.deepEqual(await acceptProposal(db.client,customer,id,proposalId),{status,proposalId});db.done();
+ }
 });
 
 test('falha ao vincular pedido desfaz toda a transação',async()=>{

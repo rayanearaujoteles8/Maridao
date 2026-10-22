@@ -6,6 +6,7 @@ import { RequestInputError, validateRequest } from './request-validation.ts';
 import { registrationLimit } from './registration-limit.ts';
 import { listRequestsQuery, requestListUser } from './request-listing.ts';
 import { neighborhoodLabel } from './catalog.ts';
+import { ProgressError,validateProgress,updateProgress } from './request-progress.ts';
 export const requestRoutes=Router();
 let pool:Pool|undefined;
 export async function closeRequestDatabase(){if(pool)await pool.end();}
@@ -29,6 +30,18 @@ requestRoutes.get('/',async(req,res,next)=>{
   const result=await pool.query(query.text,query.values);
   res.json({requests:result.rows.slice(0,20).map(row=>({...row,neighborhood_label:neighborhoodLabel(row.neighborhood)})),page:query.page,hasMore:result.rows.length>20,role:user.role});
  }catch(error){next(error);}
+});
+requestRoutes.post('/:id/status',registrationLimit,async(req,res,next)=>{
+ try{
+  const user=await requestListUser(req.headers.authorization);
+  if(!user){res.status(401).json({error:'Entre na sua conta para continuar.'});return;}
+  if(!req.is('application/json')){res.status(415).json({error:'Envie a atualização em JSON.'});return;}
+  const id=req.params.id as string;
+  validateProgress(user,id,req.body);
+  pool??=createDatabasePool();
+  const client=await pool.connect();
+  try{res.json({request:await updateProgress(client,user,id,req.body)});}finally{client.release();}
+ }catch(error){if(error instanceof ProgressError){res.status(error.status).json({error:error.message});return;}next(error);}
 });
 requestRoutes.post('/',registrationLimit,async(req,res,next)=>{
  try{

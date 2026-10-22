@@ -18,7 +18,7 @@ export async function acceptProposal(client:Pick<PoolClient,'query'>,user:Profil
   const request=(await client.query<{status:string;selected_proposal_id:string|null}>(
    'SELECT status,selected_proposal_id FROM maridao.service_requests WHERE id=$1 AND customer_id=$2 FOR UPDATE',[requestId,user.id])).rows[0];
   if(!request)throw new AcceptanceError(404,'Solicitação indisponível.');
-  if(request.status==='Aceita'&&request.selected_proposal_id===proposalId){await client.query('COMMIT');return {status:'Aceita',proposalId};}
+  if(request.status!=='Aberta'&&request.selected_proposal_id===proposalId){await client.query('COMMIT');return {status:request.status,proposalId};}
   if(request.status!=='Aberta')throw new AcceptanceError(409,'Este pedido já tem uma proposta aceita. Atualize a lista.');
   const proposal=(await client.query<{status:string;expired:boolean}>(
    `SELECT status,(valid_until < (clock_timestamp() AT TIME ZONE 'America/Araguaina')::date) AS expired FROM maridao.proposals WHERE request_id=$1 AND id=$2 FOR UPDATE`,[requestId,proposalId])).rows[0];

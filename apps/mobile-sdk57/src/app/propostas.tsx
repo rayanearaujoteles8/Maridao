@@ -6,9 +6,10 @@ import {colors,styles} from '@/components/access-screen';
 import {DateField} from '@/components/date-field';
 import {useSession} from '@/components/session';
 import {api,ApiError} from '@/lib/api';
+import {ServiceProgressActions,type ServiceProgress} from '@/components/service-progress';
 
 type Proposal={id:string;amount:string;description:string;estimated_duration:string;valid_until:string;status:string;provider_name:string;expired:boolean};
-type Result={request:{id:string;category:string;description:string;neighborhood:string;neighborhood_label?:string;status:string};proposals:Proposal[];role:'customer'|'provider';page:number;hasMore:boolean};
+type Result={request:ServiceProgress & {id:string;category:string;description:string;neighborhood:string;neighborhood_label?:string;status:string};proposals:Proposal[];role:'customer'|'provider';page:number;hasMore:boolean};
 const empty={amount:'',description:'',estimatedDuration:'',validUntil:''};
 export default function ProposalsScreen(){
  const {id}=useLocalSearchParams<{id:string}>();
@@ -74,7 +75,7 @@ export default function ProposalsScreen(){
   <Link href="./solicitacoes" style={styles.back}>‹ Voltar às solicitações</Link>
   <Text accessibilityRole="header" style={styles.title}>{data?.role==='provider'?'Sua proposta':'Propostas recebidas'}</Text>
   {!validId?<Text style={s.error}>Solicitação inválida. Volte à lista e tente novamente.</Text>:null}
-  {data?<View style={styles.card}><Text style={styles.cardTitle}>{data.request.category}</Text><Text style={styles.field}>{data.request.neighborhood_label??data.request.neighborhood}</Text><Text style={styles.description}>{data.request.description}</Text><Text style={s.label}>Status do pedido: {data.request.status}</Text></View>:null}
+  {data?<View style={styles.card}><Text style={styles.cardTitle}>{data.request.category}</Text><Text style={styles.field}>{data.request.neighborhood_label??data.request.neighborhood}</Text><Text style={styles.description}>{data.request.description}</Text><Text style={s.label}>Status do pedido: {data.request.status}</Text><ServiceProgressActions request={data.request} disabled={busy} onUpdated={updated=>setData(old=>old?{...old,request:{...old.request,...updated}}:old)}/></View>:null}
   {message?<Text accessibilityRole="alert" style={s.success}>{message}</Text>:null}
   {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
   {validId?<Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={s.secondary} onPress={()=>load()}><Text style={s.label}>{busy?'Carregando…':'Atualizar propostas'}</Text></Pressable>:null}

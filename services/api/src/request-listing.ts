@@ -2,6 +2,7 @@ import { bearerToken, tokenHash, databaseAuthStore, type AuthStore, type Profile
 import { neighborhoods } from './catalog.ts';
 import { matchingCoverage } from './coverage.ts';
 import {categorySql,coverageSql} from './catalog-compatibility.ts';
+import {progressPermissionSql} from './request-progress.ts';
 
 export const regionalMembership = JSON.stringify(Object.fromEntries([
  ...neighborhoods.flatMap(item=>[[item.value,matchingCoverage(item.value)],[item.value.toLowerCase(),matchingCoverage(item.value)]]),
@@ -20,7 +21,7 @@ export function listRequestsQuery(user: Profile, query: Record<string,unknown>) 
  const page=query.page??'1';
  if(typeof page!=='string'||!/^\d{1,4}$/.test(page)||Number(page)<1) throw new Error('Página inválida.');
  if(user.role!=='customer'&&user.role!=='provider') throw new Error('Perfil inválido.');
- const fields=`r.id,r.category,r.description,r.neighborhood,r.city,r.state,to_char(r.preferred_date,'YYYY-MM-DD') AS preferred_date,r.preferred_period,r.status,r.created_at`;
+ const fields=`r.id,r.category,r.description,r.neighborhood,r.city,r.state,to_char(r.preferred_date,'YYYY-MM-DD') AS preferred_date,r.preferred_period,r.status,r.created_at,r.started_at,r.completed_at,${progressPermissionSql(user.role)}`;
  const scope=user.role==='customer'
   ? `FROM maridao.service_requests r WHERE r.customer_id=$1`
   : `FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1

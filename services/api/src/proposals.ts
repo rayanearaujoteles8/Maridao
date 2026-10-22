@@ -7,6 +7,7 @@ import {registrationLimit} from './registration-limit.ts';
 import type {Profile} from './auth.ts';
 import {acceptProposal,AcceptanceError,validateAcceptance} from './proposal-acceptance.ts';
 import {neighborhoodLabel} from './catalog.ts';
+import {progressPermissionSql} from './request-progress.ts';
 export const proposalRoutes=Router();
 let pool:Pool|undefined;
 export async function closeProposalDatabase(){if(pool)await pool.end();}
@@ -30,9 +31,9 @@ export async function sendProposal(client:Pick<PoolClient,'query'>,providerId:st
 }
 export function proposalAccessQuery(user:Profile,requestId:string){
  if(!validRequestId(requestId))throw new Error('Solicitação inválida.');
- if(user.role==='customer')return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status FROM maridao.service_requests r WHERE r.id=$2 AND r.customer_id=$1`,values:[user.id,requestId]};
+ if(user.role==='customer')return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status,r.started_at,r.completed_at,${progressPermissionSql(user.role)} FROM maridao.service_requests r WHERE r.id=$2 AND r.customer_id=$1`,values:[user.id,requestId]};
  if(user.role!=='provider')throw new Error('Perfil inválido.');
- return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1 WHERE r.id=$2 AND ((${providerEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=$1))`,values:[user.id,requestId,regionalMembership]};
+ return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status,r.started_at,r.completed_at,${progressPermissionSql(user.role)} FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1 WHERE r.id=$2 AND ((${providerEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=$1))`,values:[user.id,requestId,regionalMembership]};
 }
 export function listProposalsQuery(user:Profile,requestId:string,page:unknown='1'){
  if(!validRequestId(requestId)||typeof page!=='string'||!/^\d{1,4}$/.test(page)||Number(page)<1||!['customer','provider'].includes(user.role??''))throw new Error('Consulta inválida.');

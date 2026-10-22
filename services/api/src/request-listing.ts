@@ -1,12 +1,16 @@
 import { bearerToken, tokenHash, databaseAuthStore, type AuthStore, type Profile } from './auth.ts';
 import { neighborhoods } from './catalog.ts';
 import { matchingCoverage } from './coverage.ts';
+import {categorySql,coverageSql} from './catalog-compatibility.ts';
 
-export const regionalMembership = JSON.stringify(Object.fromEntries(neighborhoods.map(item=>[item.value,matchingCoverage(item.value)])));
-export const providerEligibility=(membershipParameter:string)=>`r.status='Aberta' AND r.city=p.city AND r.state=p.state AND r.category=ANY(p.categories)
+export const regionalMembership = JSON.stringify(Object.fromEntries([
+ ...neighborhoods.flatMap(item=>[[item.value,matchingCoverage(item.value)],[item.value.toLowerCase(),matchingCoverage(item.value)]]),
+ ['taquaralto',['CIDADE:PALMAS','REGIAO:TAQUARALTO']],
+]));
+export const providerEligibility=(membershipParameter:string)=>`r.status='Aberta' AND r.city=p.city AND r.state=p.state AND EXISTS (SELECT 1 FROM unnest(p.categories) AS service WHERE ${categorySql('r.category')}=${categorySql('service')})
      AND (r.neighborhood=ANY(p.neighborhoods) OR EXISTS (
-      SELECT 1 FROM jsonb_array_elements_text(COALESCE(${membershipParameter}::jsonb -> r.neighborhood,'[]'::jsonb)) AS area(value)
-      WHERE area.value=ANY(p.neighborhoods)))`;
+      SELECT 1 FROM jsonb_array_elements_text(COALESCE(${membershipParameter}::jsonb -> lower(btrim(r.neighborhood)),'[]'::jsonb)) AS area(value)
+      WHERE area.value=ANY(p.neighborhoods) OR area.value=ANY(SELECT ${coverageSql('location')} FROM unnest(p.neighborhoods) AS location)))`;
 export async function requestListUser(header: string|undefined, store: AuthStore=databaseAuthStore) {
  const token=bearerToken(header);
  return token?store.findSession(tokenHash(token)):undefined;

@@ -1,4 +1,5 @@
 import { matchingCoverage, coverageLabel } from './coverage.ts';
+import {categorySql,coverageSql} from './catalog-compatibility.ts';
 import { Router } from 'express';
 import { bearerToken, tokenHash, databaseAuthStore, type AuthStore } from './auth.ts';
 import { createDatabasePool } from './database.ts';
@@ -23,7 +24,7 @@ export function searchQuery(query: Record<string,unknown>) {
  const page=query.page===undefined?'1':query.page;
  if(typeof page!=='string'||!/^\d{1,4}$/.test(page)||Number(page)<1)throw new Error('Página inválida.');
  return {
-  text: `SELECT account_id AS id, full_name AS name, categories, specialties, neighborhoods, availability, city, state FROM maridao.provider_profiles WHERE city='Palmas' AND state='TO' AND ($1='' OR EXISTS (SELECT 1 FROM unnest(categories) AS category WHERE strpos(lower(category),lower($1))>0)) AND ($2='' OR EXISTS (SELECT 1 FROM unnest(neighborhoods) AS neighborhood WHERE strpos(lower(neighborhood),lower($2))>0) OR neighborhoods && $4::text[]) ORDER BY lower(full_name),account_id LIMIT 21 OFFSET $3`,
+  text: `SELECT account_id AS id, full_name AS name, categories, specialties, neighborhoods, availability, city, state FROM maridao.provider_profiles WHERE city='Palmas' AND state='TO' AND ($1='' OR EXISTS (SELECT 1 FROM unnest(categories) AS category WHERE strpos(${categorySql('category')},${categorySql('$1')})>0)) AND ($2='' OR EXISTS (SELECT 1 FROM unnest(neighborhoods) AS neighborhood WHERE strpos(lower(neighborhood),lower($2))>0) OR neighborhoods && $4::text[] OR EXISTS (SELECT 1 FROM unnest(neighborhoods) AS location WHERE ${coverageSql('location')}=ANY($4::text[]))) ORDER BY lower(full_name),account_id LIMIT 21 OFFSET $3`,
   values:[category,neighborhood,(Number(page)-1)*20,matchingCoverage(neighborhood)],
   page:Number(page),
  };

@@ -83,7 +83,7 @@ test('envio deriva prestador da sessão e verifica compatibilidade no mesmo INSE
  const query=insertProposalQuery('prestador-da-sessao',id,{...sample,description:"x'); DROP TABLE accounts;--"});
  assert.equal(query.values[0],'prestador-da-sessao');assert.equal(query.values[1],id);
  assert.ok(!query.text.includes('DROP TABLE'));
- assert.match(query.text,/r.status='Aberta'/);assert.match(query.text,/r.category=ANY\(p.categories\)/);
+ assert.match(query.text,/r.status='Aberta'/);assert.match(query.text,/unnest\(p.categories\)/);
  assert.match(query.text,/area.value=ANY\(p.neighborhoods\)/);
  assert.ok(!query.text.includes("'Aceita'"));
  assert.equal(validRequestId('../accounts'),false);

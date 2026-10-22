@@ -23,7 +23,7 @@ test('prestador vê pedidos abertos compatíveis ou pedidos com a própria propo
  assert.equal(query.values[0],'prestador-da-sessao');
  assert.match(query.text,/p.account_id=\$1/);
  assert.match(query.text,/r.status='Aberta'/);
- assert.match(query.text,/r.category=ANY\(p.categories\)/);
+ assert.match(query.text,/unnest\(p.categories\)/);
  assert.match(query.text,/r.neighborhood=ANY\(p.neighborhoods\)/);
  assert.match(query.text,/area.value=ANY\(p.neighborhoods\)/);
  assert.match(query.text,/own.request_id=r.id AND own.provider_id=p.account_id/);

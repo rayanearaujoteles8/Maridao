@@ -7,11 +7,13 @@ import { useCatalog } from '@/hooks/use-catalog';
 
 export type CustomerRequest = { id: string; category: string; neighborhood: string; neighborhood_label?: string; status: string };
 type Props = {
+  role?: 'customer' | 'provider';
   profile: { name: string; neighborhood: string; city: string; state: string };
   requests: CustomerRequest[]; requestsLoading: boolean; requestsError: string;
   accountError: string; signingOut: boolean; onRetry: () => void; onLogout: () => void;
 };
-export function CustomerDashboard({ profile, requests, requestsLoading, requestsError, accountError, signingOut, onRetry, onLogout }: Props) {
+export function CustomerDashboard({ role = 'customer', profile, requests, requestsLoading, requestsError, accountError, signingOut, onRetry, onLogout }: Props) {
+  const provider = role === 'provider';
   const scroll = useRef<ScrollView>(null);
   const { width, fontScale } = useWindowDimensions();
   const stacked = width < 350 || fontScale > 1.2;
@@ -22,41 +24,41 @@ export function CustomerDashboard({ profile, requests, requestsLoading, requests
     <ScrollView ref={scroll} showsVerticalScrollIndicator={false} contentContainerStyle={s.page}>
       <View style={s.header}>
         <Image source={require('../../assets/brand/logotipo-preto.png')} style={s.logo} resizeMode="contain" accessibilityLabel="Maridão" />
-        <View style={s.accountTag}><View style={s.avatar} accessible={false}><Text style={s.initial}>{firstName?.slice(0, 1).toLocaleUpperCase('pt-BR')}</Text></View><Text style={s.accountLabel}>CLIENTE</Text></View>
+        <View style={s.accountTag}><View style={s.avatar} accessible={false}><Text style={s.initial}>{firstName?.slice(0, 1).toLocaleUpperCase('pt-BR')}</Text></View><Text style={s.accountLabel}>{provider ? 'PRESTADOR' : 'CLIENTE'}</Text></View>
       </View>
       <View style={s.greeting}>
-        <Text style={s.eyebrow}>BOM TER VOCÊ POR AQUI</Text>
-        <Text accessibilityRole="header" style={s.title}>{firstName ? 'Olá, ' + firstName + '.' : 'Olá!'}</Text>
-        <View style={s.location}><View style={s.dot} /><Text style={s.locationText}>{neighborhood} · {profile.city} – {profile.state}</Text></View>
+        <Text style={s.eyebrow}>{provider ? 'SEU TRABALHO FAZ A DIFERENÇA' : 'BOM TER VOCÊ POR AQUI'}</Text>
+        <Text accessibilityRole="header" style={s.title}>{provider ? profile.name : firstName ? 'Olá, ' + firstName + '.' : 'Olá!'}</Text>
+        <View style={s.location}><View style={s.dot} /><Text style={s.locationText}>{provider ? '' : neighborhood + ' · '}{profile.city} – {profile.state}</Text></View>
       </View>
       <View style={s.hero}>
-        <View style={s.heroTop}><Text style={s.heroTag}>UMA MÃOZINHA PARA O SEU DIA</Text><Text accessible={false} style={s.spark}>✦</Text></View>
-        <Text accessibilityRole="header" style={s.heroTitle}>O que vamos{'\n'}resolver hoje?</Text>
-        <Text style={s.heroDescription}>Conte o que precisa e receba propostas de quem atende sua região.</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.push('./nova-solicitacao')} style={({ pressed }) => [s.newRequest, pressed && s.pressed]}><Text style={s.newRequestText}>Pedir um serviço</Text><Text style={s.arrowGreen} accessible={false}>↗</Text></Pressable>
+        <View style={s.heroTop}><Text style={s.heroTag}>{provider ? 'OPORTUNIDADES PERTO DE VOCÊ' : 'UMA MÃOZINHA PARA O SEU DIA'}</Text><Text accessible={false} style={s.spark}>✦</Text></View>
+        <Text accessibilityRole="header" style={s.heroTitle}>{provider ? 'Sua próxima\nconquista começa aqui.' : 'O que vamos\nresolver hoje?'}</Text>
+        <Text style={s.heroDescription}>{provider ? 'Encontre pedidos para seus serviços e envie sua proposta para quem precisa de uma mãozinha.' : 'Conte o que precisa e receba propostas de quem atende sua região.'}</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.push(provider ? './solicitacoes' : './nova-solicitacao')} style={({ pressed }) => [s.newRequest, pressed && s.pressed]}><Text style={s.newRequestText}>{provider ? 'Consultar pedidos' : 'Pedir um serviço'}</Text><Text style={s.arrowGreen} accessible={false}>↗</Text></Pressable>
       </View>
-      <View style={[s.shortcuts, stacked && { flexDirection: 'column' }]}>
+      {!provider && <View style={[s.shortcuts, stacked && { flexDirection: 'column' }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Encontrar profissionais. Buscar prestadores." onPress={() => router.push('./buscar-prestadores')} style={({ pressed }) => [s.shortcut, s.searchCard, pressed && s.pressed]}>
           <Text style={s.shortcutMark} accessible={false}>↗</Text><Text style={s.searchTitle}>Encontrar{'\n'}profissionais</Text><Text style={s.searchDescription}>Busque por serviço e bairro.</Text>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Meus pedidos. Ver todas as solicitações." onPress={() => router.push('./solicitacoes')} style={({ pressed }) => [s.shortcut, s.requestsCard, pressed && s.pressed]}>
           <Text style={s.shortcutMarkDark} accessible={false}>↗</Text><Text style={s.shortcutTitle}>Meus{'\n'}pedidos</Text><Text style={s.shortcutDescription}>Propostas e andamento.</Text>
         </Pressable>
-      </View>
+      </View>}
       <View style={s.recentSection}>
-        <View style={s.sectionHeader}><Text accessibilityRole="header" style={s.sectionTitle}>Últimos pedidos</Text><Pressable accessibilityRole="button" onPress={() => router.push('./solicitacoes')} style={s.seeAll}><Text style={s.seeAllText}>Ver todos ↗</Text></Pressable></View>
-        {requestsLoading ? <Text style={s.helper}>Carregando seus pedidos…</Text> : requestsError ? <View style={s.empty}><Text accessibilityRole="alert" style={s.error}>{requestsError}</Text><Pressable accessibilityRole="button" onPress={onRetry} style={s.retry}><Text style={s.retryText}>Tentar novamente</Text></Pressable></View> : requests.length ? requests.slice(0, 2).map(request => <Pressable key={request.id} accessibilityRole="button" accessibilityLabel={request.category + '. ' + request.status + '. Ver detalhes e propostas.'} onPress={() => router.push({ pathname: './propostas', params: { id: request.id } })} style={({ pressed }) => [s.requestRow, pressed && s.pressed]}>
+        <View style={s.sectionHeader}><Text accessibilityRole="header" style={s.sectionTitle}>{provider ? 'Solicitações e propostas' : 'Últimos pedidos'}</Text><Pressable accessibilityRole="button" onPress={() => router.push('./solicitacoes')} style={s.seeAll}><Text style={s.seeAllText}>Ver todos ↗</Text></Pressable></View>
+        {requestsLoading ? <Text style={s.helper}>{provider ? 'Buscando solicitações…' : 'Carregando seus pedidos…'}</Text> : requestsError ? <View style={s.empty}><Text accessibilityRole="alert" style={s.error}>{requestsError}</Text><Pressable accessibilityRole="button" onPress={onRetry} style={s.retry}><Text style={s.retryText}>Tentar novamente</Text></Pressable></View> : requests.length ? requests.slice(0, 2).map(request => <Pressable key={request.id} accessibilityRole="button" accessibilityLabel={request.category + '. ' + request.status + '. Ver detalhes e propostas.'} onPress={() => router.push({ pathname: './propostas', params: { id: request.id } })} style={({ pressed }) => [s.requestRow, pressed && s.pressed]}>
           <View style={s.requestTop}><Text style={s.requestTitle} numberOfLines={2}>{request.category}</Text><Text style={[s.status, request.status === 'Em andamento' && s.statusActive, request.status === 'Concluída' && s.statusDone]}>{request.status}</Text></View>
           <View style={s.requestBottom}><Text style={s.requestPlace} numberOfLines={2}>{request.neighborhood_label ?? request.neighborhood}</Text><Text style={s.requestArrow} accessible={false}>↗</Text></View>
-        </Pressable>) : <View style={s.empty}><Text style={s.emptyTitle}>Seu primeiro pedido começa aqui.</Text><Text style={s.helper}>Quando você publicar uma solicitação, ela aparecerá neste espaço.</Text><Pressable accessibilityRole="button" onPress={() => router.push('./nova-solicitacao')} style={s.retry}><Text style={s.retryText}>Criar meu primeiro pedido ↗</Text></Pressable></View>}
+        </Pressable>) : <View style={s.empty}><Text style={s.emptyTitle}>{provider ? 'Novas oportunidades passam por aqui.' : 'Seu primeiro pedido começa aqui.'}</Text><Text style={s.helper}>{provider ? 'Os pedidos compatíveis com seus serviços e sua região aparecerão aqui, junto das solicitações para as quais você enviou propostas.' : 'Quando você publicar uma solicitação, ela aparecerá neste espaço.'}</Text><Pressable accessibilityRole="button" onPress={() => router.push(provider ? './solicitacoes' : './nova-solicitacao')} style={s.retry}><Text style={s.retryText}>{provider ? 'Consultar solicitações ↗' : 'Criar meu primeiro pedido ↗'}</Text></Pressable></View>}
       </View>
       {accountError ? <Text accessibilityRole="alert" style={s.error}>{accountError}</Text> : null}
       <View style={s.footer}><Text style={s.footerText}>Conectando quem precisa a quem sabe fazer.</Text><Pressable accessibilityRole="button" disabled={signingOut} accessibilityState={{ disabled: signingOut, busy: signingOut }} onPress={onLogout} style={s.logout}><Text style={s.logoutText}>{signingOut ? 'Saindo…' : 'Sair da conta'}</Text></Pressable></View>
     </ScrollView>
     <View style={s.dockWrap}><View style={s.dock}>
       <Pressable accessibilityRole="button" accessibilityState={{ selected: true }} onPress={() => scroll.current?.scrollTo({ y: 0, animated: true })} style={[s.dockItem, s.dockActive]}><Text style={s.dockActiveText}>Início</Text></Pressable>
-      <Pressable accessibilityRole="button" onPress={() => router.push('./buscar-prestadores')} style={s.dockItem}><Text style={s.dockText}>Buscar</Text></Pressable>
-      <Pressable accessibilityRole="button" onPress={() => router.push('./solicitacoes')} style={s.dockItem}><Text style={s.dockText}>Pedidos</Text></Pressable>
+      {!provider && <Pressable accessibilityRole="button" onPress={() => router.push('./buscar-prestadores')} style={s.dockItem}><Text style={s.dockText}>Buscar</Text></Pressable>}
+      <Pressable accessibilityRole="button" onPress={() => router.push('./solicitacoes')} style={s.dockItem}><Text style={s.dockText}>{provider ? 'Pedidos e propostas' : 'Pedidos'}</Text></Pressable>
     </View></View>
   </SafeAreaView>;
 }

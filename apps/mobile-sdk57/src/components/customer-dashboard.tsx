@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from './access-screen';
+import { ClientNavigation } from './client-navigation';
 import { useCatalog } from '@/hooks/use-catalog';
 
 export type CustomerRequest = { id: string; category: string; neighborhood: string; neighborhood_label?: string; status: string };
@@ -55,11 +56,10 @@ export function CustomerDashboard({ role = 'customer', profile, requests, reques
       {accountError ? <Text accessibilityRole="alert" style={s.error}>{accountError}</Text> : null}
       <View style={s.footer}><Text style={s.footerText}>Conectando quem precisa a quem sabe fazer.</Text><Pressable accessibilityRole="button" disabled={signingOut} accessibilityState={{ disabled: signingOut, busy: signingOut }} onPress={onLogout} style={s.logout}><Text style={s.logoutText}>{signingOut ? 'Saindo…' : 'Sair da conta'}</Text></Pressable></View>
     </ScrollView>
-    <View style={s.dockWrap}><View style={s.dock}>
+    {provider ? <View style={s.dockWrap}><View style={s.dock}>
       <Pressable accessibilityRole="button" accessibilityState={{ selected: true }} onPress={() => scroll.current?.scrollTo({ y: 0, animated: true })} style={[s.dockItem, s.dockActive]}><Text style={s.dockActiveText}>Início</Text></Pressable>
-      {!provider && <Pressable accessibilityRole="button" onPress={() => router.push('./buscar-prestadores')} style={s.dockItem}><Text style={s.dockText}>Buscar</Text></Pressable>}
       <Pressable accessibilityRole="button" onPress={() => router.push('./solicitacoes')} style={s.dockItem}><Text style={s.dockText}>{provider ? 'Pedidos e propostas' : 'Pedidos'}</Text></Pressable>
-    </View></View>
+    </View></View> : <ClientNavigation active="home" onActivePress={()=>scroll.current?.scrollTo({y:0,animated:true})}/>}
   </SafeAreaView>;
 }
 const s = StyleSheet.create({

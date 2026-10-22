@@ -3,6 +3,7 @@ import { Link, Redirect, useFocusEffect, router } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, styles } from '@/components/access-screen';
+import {ClientNavigation} from '@/components/client-navigation';
 import { WorkflowHeading, StatusBadge, flow } from '@/components/workflow-screen';
 import { useSession } from '@/components/session';
 import { api, ApiError } from '@/lib/api';
@@ -54,7 +55,7 @@ export default function RequestsScreen(){
    <Pressable accessibilityRole="button" accessibilityLabel={(role==='provider'&&item.status==='Aberta'?'Ver ou enviar proposta para ':'Ver propostas de ')+item.category} style={s.button} onPress={()=>router.push({pathname:'./propostas',params:{id:item.id}})}><Text style={s.buttonText}>{role==='provider'&&item.status==='Aberta'?'Ver / enviar proposta ↗':'Ver propostas ↗'}</Text></Pressable>
   </View>}
   ListFooterComponent={more?<Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={[s.button,busy&&s.disabled]} onPress={()=>load(page+1)}><Text style={s.buttonText}>{busy?'Carregando…':'Carregar mais'}</Text></Pressable>:null}
- /></SafeAreaView>;
+ />{role==='customer'?<ClientNavigation active="requests"/>:null}</SafeAreaView>;
 }
 
 const s=StyleSheet.create({section:{gap:16},button:{backgroundColor:colors.black,minHeight:56,padding:18,borderRadius:16,alignItems:'center'},buttonText:{color:colors.white,fontSize:17,fontWeight:'700'},disabled:{opacity:0.6},error:{color:'#A32121',fontSize:16,lineHeight:24},label:{fontSize:16,fontWeight:'600',color:colors.black},status:{alignSelf:'flex-start',backgroundColor:colors.pale,color:colors.black,paddingHorizontal:12,paddingVertical:6,borderRadius:12,fontWeight:'600'},details:{minHeight:44,justifyContent:'center'}});

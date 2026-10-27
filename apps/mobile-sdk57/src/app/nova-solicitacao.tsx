@@ -27,7 +27,7 @@ export default function NewRequest() {
   const [published, setPublished] = useState(false);
   const [cancelledCount,setCancelledCount]=useState(0);
   const pending = useRef(false);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   if (!session) return <Redirect href="/entrar" />;
   function change(key: keyof typeof empty, text: string) {
     setValues(old => ({ ...old, [key]: text }));

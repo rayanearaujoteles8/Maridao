@@ -15,7 +15,7 @@ type Props = {
 };
 export function CustomerDashboard({ role = 'customer', profile, requests, requestsLoading, requestsError, accountError, signingOut, onRetry, onLogout }: Props) {
   const provider = role === 'provider';
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const { width, fontScale } = useWindowDimensions();
   const stacked = width < 350 || fontScale > 1.2;
   const catalog = useCatalog();

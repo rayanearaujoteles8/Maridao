@@ -59,7 +59,7 @@ export default function SearchScreen(){
     <View style={flow.row}><Text accessibilityRole="header" style={flow.sectionTitle}>Profissionais cadastrados</Text><Pressable accessibilityRole="button" disabled={busy} style={flow.refresh} onPress={()=>search(1)}><Text style={flow.refreshText}>{busy?'Carregando…':'Atualizar ↻'}</Text></Pressable></View>
     {error?<View style={flow.empty}><Text accessibilityRole="alert" style={s.error}>{error}</Text><Pressable accessibilityRole="button" disabled={busy} style={s.toggle} onPress={()=>search(1)}><Text style={s.label}>Tentar novamente</Text></Pressable></View>:null}
    </View>}
-   ListEmptyComponent={!busy&&!error?<View style={flow.empty}><Text style={flow.cardTitle}>Nenhum profissional encontrado.</Text><Text style={flow.description}>Tente outra categoria ou localidade. Novos cadastros aparecerão por aqui.</Text></View>:null}
+   ListEmptyComponent={!busy&&!error?<View style={flow.empty}><Text style={flow.cardTitle}>Nenhum profissional encontrado.</Text><Text style={flow.description}>Tente outra categoria ou localidade. Novos cadastros aparecerão por aqui.</Text></View>:undefined}
    renderItem={({item:provider})=><View style={flow.card}>
     <View style={s.identity}><View style={s.avatar} accessible={false}><Text style={s.initial}>{provider.name.trim().slice(0,1).toLocaleUpperCase('pt-BR')}</Text></View><View style={s.nameBlock}><Text accessibilityRole="header" style={flow.cardTitle}>{provider.name}</Text><Text style={flow.field}>{provider.city} – {provider.state}</Text></View></View>
     <View style={s.tags}>{provider.categories.map(category=><Text key={category} style={s.tag}>{category}</Text>)}</View>
@@ -68,7 +68,7 @@ export default function SearchScreen(){
     <Pressable accessibilityRole="button" accessibilityLabel={(expanded===provider.id?'Fechar informações de ':'Ver informações de ')+provider.name} accessibilityState={{expanded:expanded===provider.id}} style={s.toggle} onPress={()=>setExpanded(old=>old===provider.id?null:provider.id)}><Text style={s.profileLink}>{expanded===provider.id?'Menos informações −':'Ver informações profissionais ↗'}</Text></Pressable>
     {expanded===provider.id?<View style={flow.info}><Text style={s.label}>Especialidades</Text><Text style={flow.field}>{provider.specialties.join(', ')||'Não informadas'}</Text><Text style={s.label}>Disponibilidade informada</Text><Text style={flow.field}>{provider.availability}</Text></View>:null}
    </View>}
-   ListFooterComponent={more?<Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={[s.button,busy&&s.disabled]} onPress={()=>search(page+1)}><Text style={s.buttonText}>{busy?'Carregando…':'Ver mais profissionais'}</Text></Pressable>:null}
+   ListFooterComponent={more?<Pressable accessibilityRole="button" disabled={busy} accessibilityState={{disabled:busy,busy}} style={[s.button,busy&&s.disabled]} onPress={()=>search(page+1)}><Text style={s.buttonText}>{busy?'Carregando…':'Ver mais profissionais'}</Text></Pressable>:undefined}
   />
   <ClientNavigation active="professionals" onActivePress={()=>list.current?.scrollToOffset({offset:0,animated:true})}/>
  </SafeAreaView>;

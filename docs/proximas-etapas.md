@@ -2,7 +2,7 @@
 
 ## Regra confirmada pela usuária
 
-Pendente de implementação: criar uma nova solicitação cancela automaticamente as anteriores do mesmo cliente e da mesma categoria apenas quando estiverem Abertas, sem proposta aceita. Preservar Aceita, Em andamento e Concluída. Fazer cancelamento e criação na mesma transação, sem cancelar nada se o novo cadastro falhar; tratar envios concorrentes, propostas pendentes e aceite concorrente. Informar a consequência antes da confirmação e apresentar o resultado real. Testar isolamento entre clientes e categorias, rollback e concorrência.
+Implementado no código, sujeito à validação integrada: criar uma nova solicitação cancela automaticamente as anteriores do mesmo cliente e da mesma categoria apenas quando estiverem Abertas, sem proposta aceita. Preservar Aceita, Em andamento e Concluída. Fazer cancelamento e criação na mesma transação, sem cancelar nada se o novo cadastro falhar; tratar envios concorrentes, propostas pendentes e aceite concorrente. Informar a consequência antes da confirmação e apresentar o resultado real. Testar isolamento entre clientes e categorias, rollback e concorrência.
 
 ## Configurações
 

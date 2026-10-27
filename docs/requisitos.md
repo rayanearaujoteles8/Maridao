@@ -24,7 +24,7 @@ Fonte: documento de modelagem Maridão versão 1.0, PDF fornecido pela usuária,
 5. Definir permissões e criação controlada de administradores; não oferecer perfil administrador no cadastro público.
 6. O RNF de agenda menciona conflitos de horário, mas o escopo exclui reserva e descreve disponibilidade declarativa. Não implementar agendamento antes de esclarecer.
 7. Recuperação de senha menciona informar e-mail inexistente; propor resposta neutra para evitar exposição de contas, registrando a alteração para aprovação.
-8. Esclarecer validação de identidade e moderação citadas nos RNFs sem fluxo completo correspondente.
+8. Revisão de 27/10/2026: validação documental, denúncia e bloqueio de usuários estão fora da entrega atual. Não implementar selos de identidade verificada. Ver docs/correcoes-revisao-2026-10-27.md.
 
 ## Ordem de implementação
 

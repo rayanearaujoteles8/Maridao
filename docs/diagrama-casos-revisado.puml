@@ -1,0 +1,120 @@
+@startuml
+title Maridão Acesso e configuração
+left to right direction
+actor Usuário as U
+actor Cliente as C
+actor Prestador as P
+C --|> U
+P --|> U
+rectangle Maridão {
+usecase "UC01.1\nCadastrar cliente" as UC0_0
+C -- UC0_0
+usecase "UC01.2\nEditar cliente" as UC0_1
+C -- UC0_1
+usecase "UC01.3\nExcluir cliente" as UC0_2
+C -- UC0_2
+usecase "UC02.1\nCadastrar prestador" as UC0_3
+P -- UC0_3
+usecase "UC02.2\nEditar prestador" as UC0_4
+P -- UC0_4
+usecase "UC02.3\nExcluir prestador" as UC0_5
+P -- UC0_5
+usecase "UC10.1\nRealizar login" as UC0_6
+U -- UC0_6
+usecase "UC10.2\nRealizar logout" as UC0_7
+U -- UC0_7
+usecase "UC10.3\nRecuperar senha" as UC0_8
+U -- UC0_8
+usecase "UC10.4\nCadastrar credenciais" as UC0_9
+U -- UC0_9
+}
+note "Menu → Configurações: caminho de navegação; não é herança." as N
+@enduml
+
+@startuml
+title Maridão Pedidos e propostas
+left to right direction
+actor Usuário as U
+actor Cliente as C
+actor Prestador as P
+C --|> U
+P --|> U
+rectangle Maridão {
+usecase "UC03.1\nFiltrar categoria" as UC1_0
+C -- UC1_0
+usecase "UC03.2\nFiltrar região" as UC1_1
+C -- UC1_1
+usecase "UC03.3\nVisualizar prestadores" as UC1_2
+C -- UC1_2
+usecase "UC04.1\nCriar solicitação" as UC1_3
+C -- UC1_3
+usecase "UC04.2\nInformar detalhes" as UC1_4
+C -- UC1_4
+usecase "UC04.3\nInformar preferência de data" as UC1_5
+C -- UC1_5
+usecase "UC06.1\nVisualizar propostas" as UC1_6
+C -- UC1_6
+usecase "UC06.2\nAceitar proposta" as UC1_7
+C -- UC1_7
+usecase "UC05.1\nConsultar pedidos abertos" as UC1_8
+P -- UC1_8
+usecase "UC05.2\nEnviar proposta" as UC1_9
+P -- UC1_9
+usecase "UC05.3\nEditar proposta" as UC1_10
+P -- UC1_10
+usecase "UC05.4\nRetirar proposta" as UC1_11
+P -- UC1_11
+usecase "UC06.3\nAtualizar demais propostas" as UC1_12
+note right of UC1_12: Automático no fluxo de origem
+}
+note "Menu → Configurações: caminho de navegação; não é herança." as N
+@enduml
+
+@startuml
+title Maridão Atendimento e histórico
+left to right direction
+actor Usuário as U
+actor Cliente as C
+actor Prestador as P
+C --|> U
+P --|> U
+rectangle Maridão {
+usecase "UC08.1\nRegistrar avaliação" as UC2_0
+C -- UC2_0
+usecase "UC08.2\nAtribuir nota e comentário" as UC2_1
+C -- UC2_1
+usecase "UC09.1\nHistórico do cliente" as UC2_2
+C -- UC2_2
+usecase "UC12.1\nPerfil profissional" as UC2_3
+C -- UC2_3
+usecase "UC07.2\nIniciar atendimento" as UC2_4
+P -- UC2_4
+usecase "UC09.2\nHistórico do prestador" as UC2_5
+P -- UC2_5
+usecase "UC07.1\nConsultar status" as UC2_6
+U -- UC2_6
+usecase "UC07.3\nConcluir com código do cliente" as UC2_7
+U -- UC2_7
+usecase "UC08.3\nValidar avaliação" as UC2_8
+note right of UC2_8: Automático no fluxo de origem
+usecase "UC09.3\nConsultar detalhes" as UC2_9
+U -- UC2_9
+usecase "UC11.1\nLiberar chat" as UC2_10
+note right of UC2_10: Automático no fluxo de origem
+usecase "UC11.2\nTrocar mensagens" as UC2_11
+U -- UC2_11
+usecase "UC11.3\nControlar acesso" as UC2_12
+note right of UC2_12: Automático no fluxo de origem
+usecase "UC12.2\nConsultar avaliações" as UC2_13
+U -- UC2_13
+usecase "UC12.3\nExibir reputação" as UC2_14
+note right of UC2_14: Automático no fluxo de origem
+usecase "UC13.1\nNotificar propostas" as UC2_15
+U -- UC2_15
+usecase "UC13.2\nNotificar aceite" as UC2_16
+U -- UC2_16
+usecase "UC13.3\nNotificar atualizações" as UC2_17
+U -- UC2_17
+}
+note "Menu → Configurações: caminho de navegação; não é herança." as N
+@enduml

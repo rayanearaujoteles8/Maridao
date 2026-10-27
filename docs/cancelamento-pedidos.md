@@ -19,3 +19,8 @@ A tela informa a consequência antes de publicar e exibe o número real de pedid
 Verificação: tipos API/mobile e 42 testes de unidade passaram (39 API, 3 mobile). Casos novos cobrem ordem dos bloqueios, escopo parametrizado, cancelamento de propostas pendentes, primeiro pedido, entrada inválida e rollback. Lint tentado; ESLint não configurado. Aplicação da migração, concorrência em PostgreSQL e fluxo visual no iPhone ainda precisam ser validados.
 
 Teste manual: criar A e depois B na mesma categoria, conferir A Cancelada e B Aberta; conferir propostas antigas Canceladas; publicar em outra categoria e verificar preservação. Aceitar uma proposta e publicar novo pedido da mesma categoria: o pedido aceito deve permanecer. Conferir duas publicações simultâneas e disputa de publicação/aceite em banco de teste. Não utilizar dados pessoais reais nesses testes.
+
+
+## Rastreabilidade revisada em 27/10/2026
+
+A migração 010 cria request_events. Cada pedido substituído gera request_replaced com autor, horário do servidor, estado Aberta → Cancelada, motivo e referência ao novo pedido. Evento e criação/cancelamentos pertencem à mesma transação; falha no evento reverte a publicação inteira. Registros anteriores sem evento permanecem legados, sem motivos ou datas inventados. Ver docs/andamento.md.

@@ -1,25 +1,49 @@
-# Andamento do atendimento
+# Confirmação da conclusão e atendimento de problemas
 
-Implementa RF07.1/UC07.1, RF07.2/UC07.2 e RF07.3/UC07.3 do documento Maridão (2), páginas 45–47. Fluxo: Aberta → Aceita (aceite existente) → Em andamento → Concluída. Somente o prestador cuja proposta foi aceita inicia e conclui; o cliente acompanha as etapas na própria solicitação. Outros prestadores consultam apenas os resultados das próprias propostas e não recebem controles de alteração.
+Revisão vigente de 27/10/2026, relacionada a RF07 e UC07.3. Substitui o fluxo anterior que permitia ao prestador concluir sozinho.
 
 ## Ativação
 
-Como postgres no SQL Shell, executar migrations/007_service_progress.sql depois das migrações 005 e 006 já aplicadas. A migração acrescenta started_at e completed_at, amplia as condições de estado e concede UPDATE somente nas duas novas colunas de horário. Mantém o vínculo obrigatório à proposta escolhida e exige coerência entre etapa e horários. Pode ser reexecutada sem apagar registros. Não executar novamente a migração 006 depois da 007, pois a versão anterior restringe os estados a Aberta/Aceita.
+Depois das migrações anteriores, aplicar 009_proposal_management.sql e 010_customer_confirmation.sql como postgres no SQL Shell. Os arquivos declaram UTF8 explicitamente. API e aplicativo devem ser atualizados juntos.
 
-Reiniciar a API e recarregar o Expo. No perfil do prestador escolhido: Solicitações e propostas → Ver detalhes → Iniciar atendimento; depois Concluir atendimento. Os controles também aparecem no cabeçalho dos detalhes de propostas. Cada alteração tem confirmação. O cliente usa Atualizar solicitações para acompanhar; sem atualização automática ou aviso de notificação enviado.
+010 cria campos de confirmação, request_events e service_support. Também recria as regras de estado para permitir cancelamento administrativo com preservação do horário de início e corrige a codificação antiga de Concluída. Nenhuma tabela é excluída. As migrações ainda não foram aplicadas ao banco principal pelo agente: a conexão disponível usa maridao_api, sem permissão administrativa.
 
-## API e segurança
+## Fluxo
 
-POST /requests/:id/status recebe somente status, com os valores Em andamento ou Concluída. Conta e perfil são derivados da sessão; clientes recebem 403. O servidor valida UUID, campos e transição; obtém e bloqueia a solicitação vinculada à proposta Aceita e ao prestador autenticado antes de gravar. Tentativa de outro prestador recebe 404. Não permite concluir antes do início, iniciar um pedido aberto ou reabrir um atendimento concluído.
+Prestador escolhido inicia Aceita → Em andamento. Cliente do pedido confere o serviço e gera código aleatório de seis dígitos, válido por dez minutos, com até cinco tentativas. Novo código invalida o anterior. O servidor guarda resumo com salt, prazo e contador; não guarda o código legível. Somente a resposta de geração ao cliente contém o código. Ele não é enviado nos detalhes ao prestador ou nos logs.
 
-Atualização e horários são gravados em transação. Repetir a mesma etapa é idempotente e preserva os horários. Data/hora vêm do PostgreSQL; na tela são apresentados no horário de Palmas. Falha provoca rollback, e o app não confirma sucesso antes da resposta real. Em falha de conexão, atualizar a lista para conferir o resultado antes de repetir. O aceite da proposta escolhida continua idempotente mesmo após o atendimento avançar, sem regredir seu estado.
+Prestador informa o código recebido do cliente. POST /requests/:id/status só aceita Concluída com code de seis dígitos. Confere sessão, vínculo ao escolhido, etapa, prazo, tentativas e ausência de protocolo aberto. Código válido grava status e horário, invalida código e registra evento na mesma transação. Código inválido incrementa o contador e confirma essa tentativa sem alterar status; o rollback de uma tentativa de conclusão não apaga o contador. Repetição de uma conclusão já persistida preserva horários e não registra outro evento.
 
-GET /requests e os detalhes de propostas retornam can_manage calculado pelo servidor, além dos horários. A interface usa esse indicador para mostrar botões somente ao escolhido; o endpoint repete a autorização. Listagem, privacidade e regras de compatibilidade existentes foram preservadas.
+POST /requests/:id/completion-code exige cliente proprietário e corpo vazio. Geração limitada pelo controle existente de requisições. Ausência, vencimento, cinco erros e código de outra solicitação não permitem concluir. Não são usados dígitos do telefone.
+
+## Discordância e não realização
+
+Cliente seleciona Relatar problema, escolhe discordancia ou nao_realizado e descreve o ocorrido. POST /requests/:id/support persiste protocolo privado vinculado ao pedido, invalida código anterior e registra evento, tudo em transação. Um pedido só pode ter um protocolo Aberto. Enquanto houver protocolo aberto, não gera nem valida código de conclusão.
+
+GET /requests/:id/support é exclusivo do próprio cliente e retorna os vinte protocolos mais recentes, incluindo resposta e data de resolução. Prestador só recebe a informação de que há análise aberta, sem relato privado do cliente. A interface informa protocolo registrado para análise; não afirma envio de e-mail/push. Não há promessa de SLA/atendimento 24 horas.
+
+Na entrega de teste, a triagem administrativa ocorre pelo banco, por operador autorizado. Não existe portal administrativo no aplicativo nem cadastro público desse papel. Para consultar a fila como postgres:
+
+    SELECT id,request_id,reason,status,created_at FROM maridao.service_support WHERE status='Aberto' ORDER BY created_at,id;
+
+Após verificar as informações com as partes, a administração resolve com justificativa, usando função sem permissão de execução para PUBLIC/maridao_api:
+
+    SELECT maridao.resolve_service_support('UUID_DO_PROTOCOLO','resolver','Justificativa da resolução');
+
+Ou cancela quando a análise conclui que o serviço não ocorreu:
+
+    SELECT maridao.resolve_service_support('UUID_DO_PROTOCOLO','cancelar','Justificativa do cancelamento');
+
+A função usa SECURITY INVOKER, exige privilégios do operador e grava o usuário de banco, decisão, justificativa e data/hora. Resolver mantém Em andamento e permite que o cliente gere novo código; não conclui automaticamente. Cancelar preserva o vínculo à proposta, o início se existente e o histórico, muda proposta escolhida e pedido para Cancelada e registra evento. Não há exclusão nem reembolso automático. Não executar exemplos sem substituir por protocolo real e decisão verificada.
+
+Avaliação pública e comentário de qualidade seguem RF08 após conclusão real. Não forçar Concluída nem criar nota de serviço não realizado para viabilizar o relato. A implementação de avaliações segue com Kaio.
+
+## Rastreabilidade
+
+request_events contém solicitação, autor autenticado ou administração, ação, horário do servidor, estado anterior/novo, motivo e pedido substituto quando aplicável. O cancelamento automático existente agora grava request_replaced na mesma transação do novo pedido; o registro não é somente mensagem de console. Registros antigos sem evento não recebem motivo ou horário inventado.
+
+service_support contém relato privado, estado, decisão, justificativa e operador. Propostas retiradas preservam withdrawn_at e versão desde 009. Não há módulo de denúncia/bloqueio ou validação documental. Proteção de campos cadastrais permanece.
 
 ## Verificação
 
-Tipos conferidos na API e no aplicativo. 39 testes de unidade passaram (36 API e 3 aplicativo), incluindo prestador indevido, cliente, salto de etapa, repetição sem alteração de horários, rollback e acesso aos controles. Lint foi tentado, mas o projeto ainda não tem ESLint configurado; nenhuma dependência foi adicionada nesta etapa. A aplicação da migração no PostgreSQL e a validação visual no iPhone aguardam teste local da usuária.
-
-Teste manual: cancelar uma confirmação e conferir que nada muda; confirmar início e verificar Em andamento nas duas contas; concluir e verificar Concluída e horários nas duas contas. Entrar como outro prestador e conferir ausência de botões. Avaliações, chat e notificações RF13 continuam pendentes; não apresentar como implementados.
-
-Correção após teste da usuária: PostgreSQL retornava 42P08 ao deduzir tipos diferentes para o parâmetro de status usado no UPDATE e nos CASEs de horários. A consulta compartilhada progressUpdateSql define varchar(30) explicitamente para esse parâmetro em todas as ocorrências. Confirmado com EXPLAIN no PostgreSQL local, sem executar atualizações em atendimentos existentes. Regressão: npm run test:progress:db valida o planejamento das consultas de início e conclusão; testes de unidade de autorização e transição também passaram. Não requer outra migração, somente reiniciar a API.
+Testes unitários cobrem ausência de código, cliente indevido, validade, tentativas persistentes, bloqueio por protocolo e rollback quando o evento falha. Teste PostgreSQL com tabelas temporárias cobre emissão real, tentativa incorreta, conclusão correta, invalidação, protocolo, bloqueio e cancelamento administrativo preservando histórico. Não altera dados existentes. Privilégios e migração no banco principal, teste simultâneo em duas conexões e interface no iPhone ainda dependem da ativação e validação final.

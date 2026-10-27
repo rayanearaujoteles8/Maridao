@@ -1,3 +1,4 @@
+import {completionPermissionSql} from './customer-confirmation.ts';
 import { bearerToken, tokenHash, databaseAuthStore, type AuthStore, type Profile } from './auth.ts';
 import { neighborhoods } from './catalog.ts';
 import { matchingCoverage } from './coverage.ts';
@@ -21,7 +22,7 @@ export function listRequestsQuery(user: Profile, query: Record<string,unknown>) 
  const page=query.page??'1';
  if(typeof page!=='string'||!/^\d{1,4}$/.test(page)||Number(page)<1) throw new Error('Página inválida.');
  if(user.role!=='customer'&&user.role!=='provider') throw new Error('Perfil inválido.');
- const fields=`r.id,r.category,r.description,r.neighborhood,r.city,r.state,to_char(r.preferred_date,'YYYY-MM-DD') AS preferred_date,r.preferred_period,r.status,r.created_at,r.started_at,r.completed_at,${progressPermissionSql(user.role)}`;
+ const fields=`r.id,r.category,r.description,r.neighborhood,r.city,r.state,to_char(r.preferred_date,'YYYY-MM-DD') AS preferred_date,r.preferred_period,r.status,r.created_at,r.started_at,r.completed_at,${progressPermissionSql(user.role)},${completionPermissionSql(user.role)}`;
  const scope=user.role==='customer'
   ? `FROM maridao.service_requests r WHERE r.customer_id=$1`
   : `FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1

@@ -1,7 +1,7 @@
 {
   "name": "maridao-api",
   "version": "1.0.0",
-  "description": "API do aplicativo mobile Marid\u00e3o",
+  "description": "API do aplicativo mobile Maridão",
   "scripts": {
     "dev": "node --watch --env-file-if-exists=.env src/server.ts",
     "start": "node --env-file-if-exists=.env src/server.ts",
@@ -10,7 +10,8 @@
     "db:check": "node --env-file=.env src/check-database.ts",
     "test:compatibility:db": "node --env-file=.env --test tests/catalog-compatibility.database.test.ts",
     "test:progress:db": "node --env-file=.env --test tests/request-progress.database.test.ts",
-    "test:unit": "node --test tests/customer.test.ts tests/auth.test.ts tests/provider.test.ts tests/search.test.ts tests/requests.test.ts tests/catalog.test.ts tests/proposals.test.ts tests/request-progress.test.ts"
+    "test:unit": "node --test tests/customer.test.ts tests/auth.test.ts tests/provider.test.ts tests/search.test.ts tests/requests.test.ts tests/catalog.test.ts tests/proposals.test.ts tests/request-progress.test.ts tests/proposal-management.test.ts tests/customer-confirmation.test.ts",
+    "test:proposals:db": "node --env-file=.env --test tests/proposal-management.database.test.ts"
   },
   "keywords": [],
   "author": "",

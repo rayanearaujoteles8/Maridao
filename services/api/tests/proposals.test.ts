@@ -24,15 +24,15 @@ function scriptedDatabase(steps:{match:RegExp;rows?:unknown[];rowCount?:number;f
 test('aceite exige cliente, identificadores válidos e formulário sem conta/status enviados',()=>{
  assert.throws(()=>validateAcceptance({...customer,role:'provider'},id,proposalId,{}),AcceptanceError);
  assert.throws(()=>validateAcceptance(customer,'outro',proposalId,{}),AcceptanceError);
- for(const input of [undefined,[],{customerId:'outro'},{status:'Aceita'}])assert.throws(()=>validateAcceptance(customer,id,proposalId,input),AcceptanceError);
- validateAcceptance(customer,id,proposalId,{});
+ for(const input of [undefined,{},[],{version:0},{customerId:'outro'},{status:'Aceita'}])assert.throws(()=>validateAcceptance(customer,id,proposalId,input),AcceptanceError);
+ validateAcceptance(customer,id,proposalId,{version:1});
 });
 
 test('aceite bloqueia pedido, confere validade e grava escolha e demais status juntos',async()=>{
  const db=scriptedDatabase([
   {match:/^BEGIN$/},
   {match:/customer_id=\$2 FOR UPDATE/,values:[id,customer.id],rows:[{status:'Aberta',selected_proposal_id:null}]},
-  {match:/clock_timestamp\(\).*request_id=\$1 AND id=\$2 FOR UPDATE/,values:[id,proposalId],rows:[{status:'Pendente',expired:false}]},
+  {match:/clock_timestamp\(\).*request_id=\$1 AND id=\$2 FOR UPDATE/,values:[id,proposalId],rows:[{status:'Pendente',expired:false,version:1}]},
   {match:/SET status='Não selecionada'.*status='Pendente'/,values:[id,proposalId],rowCount:2},
   {match:/SET status='Aceita'/,values:[id,proposalId],rowCount:1},
   {match:/selected_proposal_id=\$2.*customer_id=\$3/,values:[id,proposalId,customer.id],rowCount:1},
@@ -60,7 +60,7 @@ test('repetir a confirmação da mesma proposta é seguro mesmo após o fim da v
 });
 
 test('falha ao vincular pedido desfaz toda a transação',async()=>{
- const db=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE/,rows:[{status:'Aberta'}]},{match:/FOR UPDATE/,rows:[{status:'Pendente',expired:false}]},{match:/Não selecionada/},{match:/SET status='Aceita'/,rowCount:1},{match:/selected_proposal_id/,fail:true},{match:/ROLLBACK/}]);
+ const db=scriptedDatabase([{match:/BEGIN/},{match:/FOR UPDATE/,rows:[{status:'Aberta'}]},{match:/FOR UPDATE/,rows:[{status:'Pendente',expired:false,version:1}]},{match:/Não selecionada/},{match:/SET status='Aceita'/,rowCount:1},{match:/selected_proposal_id/,fail:true},{match:/ROLLBACK/}]);
  await assert.rejects(()=>acceptProposal(db.client,customer,id,proposalId));
  assert.ok(!db.commands.includes('COMMIT'));db.done();
 });

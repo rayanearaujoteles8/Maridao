@@ -112,3 +112,10 @@ test('primeiro pedido não altera solicitações nem propostas existentes',async
  assert.ok(!calls.some(text=>text.startsWith('UPDATE')));
  assert.equal(calls.at(-1),'COMMIT');
 });
+
+test('falha ao registrar evento do cancelamento reverte a publicação e não deixa cancelamento sem rastreabilidade',async()=>{
+ const calls:string[]=[];
+ const client={query:async(text:string)=>{calls.push(text);if(text.startsWith('SELECT r.id'))return {rows:[{id:'anterior'}]};if(text.startsWith('INSERT INTO maridao.request_events'))throw new Error('falha no evento');if(text.startsWith('INSERT'))return {rows:[{id:'novo'}]};return {rows:[]};}};
+ await assert.rejects(()=>createRequest(client as any,'cliente',sample),/falha no evento/);
+ assert.equal(calls.at(-1),'ROLLBACK');assert.ok(!calls.includes('COMMIT'));
+});

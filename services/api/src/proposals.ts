@@ -1,3 +1,4 @@
+import {completionPermissionSql} from './customer-confirmation.ts';
 import {Router} from 'express';
 import type {Pool,PoolClient} from 'pg';
 import {createDatabasePool} from './database.ts';
@@ -8,6 +9,7 @@ import type {Profile} from './auth.ts';
 import {acceptProposal,AcceptanceError,validateAcceptance} from './proposal-acceptance.ts';
 import {neighborhoodLabel} from './catalog.ts';
 import {progressPermissionSql} from './request-progress.ts';
+import {changeProposal,validateProposalChange} from './proposal-management.ts';
 export const proposalRoutes=Router();
 let pool:Pool|undefined;
 export async function closeProposalDatabase(){if(pool)await pool.end();}
@@ -31,16 +33,37 @@ export async function sendProposal(client:Pick<PoolClient,'query'>,providerId:st
 }
 export function proposalAccessQuery(user:Profile,requestId:string){
  if(!validRequestId(requestId))throw new Error('Solicitação inválida.');
- if(user.role==='customer')return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status,r.started_at,r.completed_at,${progressPermissionSql(user.role)} FROM maridao.service_requests r WHERE r.id=$2 AND r.customer_id=$1`,values:[user.id,requestId]};
+ if(user.role==='customer')return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status,r.created_at,r.city,r.state,to_char(r.preferred_date,'YYYY-MM-DD') AS preferred_date,r.preferred_period,r.started_at,r.completed_at,${progressPermissionSql(user.role)},${completionPermissionSql(user.role)} FROM maridao.service_requests r WHERE r.id=$2 AND r.customer_id=$1`,values:[user.id,requestId]};
  if(user.role!=='provider')throw new Error('Perfil inválido.');
- return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status,r.started_at,r.completed_at,${progressPermissionSql(user.role)} FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1 WHERE r.id=$2 AND ((${providerEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=$1))`,values:[user.id,requestId,regionalMembership]};
+ return {text:`SELECT r.id,r.category,r.description,r.neighborhood,r.status,r.created_at,r.city,r.state,to_char(r.preferred_date,'YYYY-MM-DD') AS preferred_date,r.preferred_period,r.started_at,r.completed_at,${progressPermissionSql(user.role)},${completionPermissionSql(user.role)} FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1 WHERE r.id=$2 AND ((${providerEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=$1))`,values:[user.id,requestId,regionalMembership]};
 }
 export function listProposalsQuery(user:Profile,requestId:string,page:unknown='1'){
  if(!validRequestId(requestId)||typeof page!=='string'||!/^\d{1,4}$/.test(page)||Number(page)<1||!['customer','provider'].includes(user.role??''))throw new Error('Consulta inválida.');
- return {text:`SELECT o.id,o.amount,o.description,o.estimated_duration,to_char(o.valid_until,'YYYY-MM-DD') AS valid_until,o.status,o.created_at,p.full_name AS provider_name,
+ return {text:`SELECT o.id,o.amount,o.description,o.estimated_duration,to_char(o.valid_until,'YYYY-MM-DD') AS valid_until,o.status,o.created_at,o.version,o.updated_at,o.withdrawn_at,p.full_name AS provider_name,
  (o.valid_until < (now() AT TIME ZONE 'America/Araguaina')::date) AS expired
  FROM maridao.proposals o JOIN maridao.provider_profiles p ON p.account_id=o.provider_id
  JOIN maridao.service_requests r ON r.id=o.request_id WHERE o.request_id=$1 AND ${user.role==='customer'?'r.customer_id=$2':'o.provider_id=$2'} ORDER BY (o.status='Aceita') DESC,o.created_at DESC,o.id DESC LIMIT 21 OFFSET $3`,values:[requestId,user.id,(Number(page)-1)*20],page:Number(page)};
+}
+for(const withdraw of [false,true]){
+ const path=withdraw?'/:id/proposals/:proposalId/withdraw':'/:id/proposals/:proposalId';
+ const handler:import('express').RequestHandler=async(req,res,next)=>{
+  try{
+   const user=await requestListUser(req.headers.authorization);
+   if(!user){res.status(401).json({error:'Entre na sua conta para continuar.'});return;}
+   if(!req.is('application/json')){res.status(415).json({error:'Envie os dados em JSON.'});return;}
+   const requestId=req.params.id as string,proposalId=req.params.proposalId as string;
+   validateProposalChange(user,requestId,proposalId,req.body,withdraw);
+   pool??=createDatabasePool();const client=await pool.connect();
+   try{res.json({message:withdraw?'Proposta retirada.':'Proposta atualizada!',proposal:await changeProposal(client,user,requestId,proposalId,req.body,withdraw)});}
+   finally{client.release();}
+  }catch(error){
+   if(error instanceof AcceptanceError){res.status(error.status).json({error:error.message});return;}
+   if(error instanceof ProposalInputError){res.status(400).json({error:error.message,fields:error.fields});return;}
+   next(error);
+  }
+ };
+ if(withdraw)proposalRoutes.post(path,registrationLimit,handler);
+ else proposalRoutes.patch(path,registrationLimit,handler);
 }
 proposalRoutes.post('/:id/proposals',registrationLimit,async(req,res,next)=>{
  try{

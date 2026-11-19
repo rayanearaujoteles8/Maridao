@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import {historyQuery} from './history.ts';
-import {CompletionError,issueCompletionCode,openSupport,supportQuery,recordEvent} from './customer-confirmation.ts';
+import {CompletionError,openSupport,supportQuery,recordEvent} from './customer-confirmation.ts';
+import {autoConfirmOverdue,settleOverdue} from './request-completion.ts';
+import {expireOverdueProposals} from './proposal-versions.ts';
 import type {Profile} from './auth.ts';
 import type { Pool, PoolClient } from 'pg';
 import { bearerToken, tokenHash, databaseAuthStore, type AuthStore } from './auth.ts';
@@ -14,6 +16,10 @@ import { ProgressError,validateProgress,updateProgress } from './request-progres
 export const requestRoutes=Router();
 let pool:Pool|undefined;
 export async function closeRequestDatabase(){if(pool)await pool.end();}
+// Passada periódica da confirmação automática (RN07), chamada pelo servidor.
+export async function runAutoConfirm(){pool??=createDatabasePool();return autoConfirmOverdue(pool);}
+// Passada periódica da expiração das propostas (RN04), chamada pelo servidor.
+export async function runExpireProposals(){pool??=createDatabasePool();return expireOverdueProposals(pool);}
 export async function requestCustomer(header:string|undefined,store:AuthStore=databaseAuthStore){
  const token=bearerToken(header);
  const user=token?await store.findSession(tokenHash(token)):undefined;
@@ -42,20 +48,16 @@ export async function createRequest(client:Pick<PoolClient,'query'>,customerId:s
   return {request:result.rows[0],cancelledCount:ids.length};
  }catch(error){try{await client.query('ROLLBACK');}catch{}throw error;}
 }
-for(const kind of ['completion-code','support'] as const){
- requestRoutes.post('/:id/'+kind,registrationLimit,async(req,res,next)=>{
-  try{
-   const user=await requestListUser(req.headers.authorization);
-   if(!user){res.status(401).json({error:'Entre na sua conta para continuar.'});return;}
-   if(!req.is('application/json')){res.status(415).json({error:'Envie os dados em JSON.'});return;}
-   pool??=createDatabasePool();const client=await pool.connect();
-   try{
-    const result=kind==='completion-code'?await issueCompletionCode(client,user,req.params.id as string,req.body):await openSupport(client,user,req.params.id as string,req.body);
-    res.status(kind==='support'?201:200).json(result);
-   }finally{client.release();}
-  }catch(error){if(error instanceof CompletionError){res.status(error.status).json({error:error.message});return;}next(error);}
- });
-}
+// Protocolo de suporte: só para serviço não realizado antes do início (pedido "Aceita").
+requestRoutes.post('/:id/support',registrationLimit,async(req,res,next)=>{
+ try{
+  const user=await requestListUser(req.headers.authorization);
+  if(!user){res.status(401).json({error:'Entre na sua conta para continuar.'});return;}
+  if(!req.is('application/json')){res.status(415).json({error:'Envie os dados em JSON.'});return;}
+  pool??=createDatabasePool();const client=await pool.connect();
+  try{res.status(201).json(await openSupport(client,user,req.params.id as string,req.body));}finally{client.release();}
+ }catch(error){if(error instanceof CompletionError){res.status(error.status).json({error:error.message});return;}next(error);}
+});
 requestRoutes.get('/:id/support',async(req,res,next)=>{
  try{
   const user=await requestListUser(req.headers.authorization);
@@ -70,7 +72,7 @@ requestRoutes.get('/history',async(req,res,next)=>{
   if(!user){res.status(401).json({error:'Entre na sua conta para continuar.'});return;}
   if(!['customer','provider'].includes(user.role??'')){res.status(403).json({error:'Histórico indisponível para este perfil.'});return;}
   let query;try{query=historyQuery(user,req.query);}catch{res.status(400).json({error:'Confira a página informada.'});return;}
-  pool??=createDatabasePool();const result=await pool.query(query.text,query.values);
+  pool??=createDatabasePool();await settleOverdue(pool);const result=await pool.query(query.text,query.values);
   res.json({requests:result.rows.slice(0,20).map(row=>({...row,neighborhood_label:neighborhoodLabel(row.neighborhood)})),page:query.page,hasMore:result.rows.length>20,role:user.role});
  }catch(error){next(error);}
 });
@@ -82,6 +84,7 @@ requestRoutes.get('/',async(req,res,next)=>{
   let query;
   try{query=listRequestsQuery(user,req.query);}catch{res.status(400).json({error:'Confira os filtros de consulta.'});return;}
   pool ??= createDatabasePool();
+  await settleOverdue(pool);
   const result=await pool.query(query.text,query.values);
   res.json({requests:result.rows.slice(0,20).map(row=>({...row,neighborhood_label:neighborhoodLabel(row.neighborhood)})),page:query.page,hasMore:result.rows.length>20,role:user.role});
  }catch(error){next(error);}
@@ -96,7 +99,7 @@ requestRoutes.post('/:id/status',registrationLimit,async(req,res,next)=>{
   pool??=createDatabasePool();
   const client=await pool.connect();
   try{res.json({request:await updateProgress(client,user,id,req.body)});}finally{client.release();}
- }catch(error){if(error instanceof ProgressError||error instanceof CompletionError){res.status(error.status).json({error:error.message});return;}next(error);}
+ }catch(error){if(error instanceof ProgressError){res.status(error.status).json({error:error.message});return;}next(error);}
 });
 requestRoutes.post('/',registrationLimit,async(req,res,next)=>{
  try{
@@ -104,7 +107,7 @@ requestRoutes.post('/',registrationLimit,async(req,res,next)=>{
   if(access.status!==200||!access.user){res.status(access.status).json({error:access.status===401?'Entre na sua conta para continuar.':'Somente clientes podem criar solicitações.'});return;}
   if(!req.is('application/json')){res.status(415).json({error:'Envie os dados em JSON.'});return;}
   insertRequestQuery(access.user.id,req.body);
-  pool ??= createDatabasePool();
+  pool ??= createDatabasePool();await settleOverdue(pool);
   const client=await pool.connect();
   try{res.status(201).json({message:'Solicitação criada com sucesso.',...await createRequest(client,access.user.id,req.body)});}finally{client.release();}
  }catch(error){

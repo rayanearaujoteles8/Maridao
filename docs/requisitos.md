@@ -1,6 +1,6 @@
 # Estado vigente da implementação
 
-A revisão atual está em [Entrega da equipe de 17/11/2026](entrega-equipe-2026-11-17.md). As seções abaixo preservam o histórico das etapas de desenvolvimento; marcações antigas de pendência não substituem a matriz vigente.
+A situação atual está na seção Revisão de 18/11/2026, ao final deste arquivo, e em [Próximas etapas](proximas-etapas.md). A [Entrega da equipe de 17/11/2026](entrega-equipe-2026-11-17.md) é o registro da revisão anterior. As seções abaixo preservam o histórico das etapas de desenvolvimento; marcações antigas de pendência não substituem a situação vigente.
 
 # Primeira etapa e rastreabilidade
 
@@ -21,14 +21,14 @@ Fonte: documento de modelagem Maridão versão 1.0, PDF fornecido pela usuária,
 
 ## Decisões ainda necessárias
 
-1. UC02.1 alterna entre CNPJ e CPF/CNPJ. Confirmar documentos aceitos antes de finalizar o formulário e o banco.
+1. UC02.1 alterna entre CNPJ e CPF/CNPJ. Confirmar documentos aceitos antes de finalizar o formulário e o banco. Resolvido: em 20/10/2026 ficou CPF ou CNPJ; desde 18/11/2026 o cadastro aceita somente CPF.
 2. Confirmar campos exatos do endereço do cliente; o documento cita endereço e localização, incluindo cidade e bairro.
 3. Definir critérios mínimos de senha, duração de sessão e validade de tokens; o documento não fornece valores.
 4. Confirmar se a mesma pessoa pode ter perfis de cliente e prestador.
-5. Definir permissões e criação controlada de administradores; não oferecer perfil administrador no cadastro público.
+5. Definir permissões e criação controlada de administradores; não oferecer perfil administrador no cadastro público. Resolvido em 18/11/2026: ver docs/administracao.md.
 6. O RNF de agenda menciona conflitos de horário, mas o escopo exclui reserva e descreve disponibilidade declarativa. Não implementar agendamento antes de esclarecer.
 7. Recuperação de senha menciona informar e-mail inexistente; propor resposta neutra para evitar exposição de contas, registrando a alteração para aprovação.
-8. Revisão de 27/10/2026: validação documental, denúncia e bloqueio de usuários estão fora da entrega atual. Não implementar selos de identidade verificada. Ver docs/correcoes-revisao-2026-10-27.md.
+8. Revisão de 27/10/2026: validação documental, denúncia e bloqueio de usuários estão fora da entrega atual. Não implementar selos de identidade verificada. Ver docs/correcoes-revisao-2026-10-27.md. Atualização de 18/11/2026: a administração aprova ou rejeita o cadastro do prestador e inativa contas; denúncia e selos continuam fora.
 
 ## Ordem de implementação
 
@@ -39,7 +39,7 @@ Fonte: documento de modelagem Maridão versão 1.0, PDF fornecido pela usuária,
 5. Implementar recuperação de senha com envio real ou serviço local de teste identificado.
 6. Validar duplicidades, entradas inválidas, sessão expirada e tentativas de acesso a dados de outra conta.
 
-Nenhum item desta lista está marcado como implementado.
+Em 20/10/2026 nenhum item desta lista estava implementado. Hoje os seis estão; a recuperação de senha usa o serviço local de teste, sem envio real de e-mail.
 
 ## Delimitação regional aprovada
 
@@ -69,7 +69,7 @@ Aplicar migrations/002_sessions.sql como postgres antes de testar. Testes reais 
 
 ## Cadastro do prestador
 
-A usuária definiu em 20/10/2026 que o cadastro aceita CPF ou CNPJ. RF02.1/UC02.1 e RF10.4: nome pessoal/profissional, e-mail, telefone, senha de 8 a 128 caracteres, documento escolhido, categorias, especialidades, bairros de Palmas e disponibilidade declarativa. Listas informadas manualmente, sem GPS ou agenda automática. CNPJ aceita formato numérico e alfanumérico, validando seus dígitos conforme Receita Federal; isso não comprova identidade ou situação cadastral.
+Atualização de 18/11/2026: o cadastro de prestador aceita somente CPF e nasce Em análise; o que este parágrafo diz sobre CNPJ vale para a versão anterior. A usuária definiu em 20/10/2026 que o cadastro aceita CPF ou CNPJ. RF02.1/UC02.1 e RF10.4: nome pessoal/profissional, e-mail, telefone, senha de 8 a 128 caracteres, documento escolhido, categorias, especialidades, bairros de Palmas e disponibilidade declarativa. Listas informadas manualmente, sem GPS ou agenda automática. CNPJ aceita formato numérico e alfanumérico, validando seus dígitos conforme Receita Federal; isso não comprova identidade ou situação cadastral.
 
 RNF02.2: documento do prestador armazenado com AES-256-GCM, IV aleatório, autenticação e versão do formato. HMAC-SHA256 com chave independente permite verificar duplicidade sem guardar o documento legível. Chaves somente no .env do servidor, fora do Git. Manter cópia segura das chaves junto à política de backup: perdê-las impede recuperar documentos; a rotação requer migração coordenada de dados e índices.
 
@@ -77,7 +77,7 @@ POST /providers cria conta e perfil em transação. E-mail único em contas; doc
 
 Aplicar migrations/003_provider_profiles.sql como postgres antes de testar. A integração real depende da execução na máquina da usuária.
 
-O campo de identificação do prestador mostra Nome completo para CPF e Razão social para CNPJ, conforme ajuste solicitado pela usuária, incluindo o rótulo de acessibilidade.
+O campo de identificação do prestador mostra Nome completo para CPF e Razão social para CNPJ, conforme ajuste solicitado pela usuária, incluindo o rótulo de acessibilidade. Desde 18/11/2026 não há opção CNPJ no formulário.
 
 ## Busca de prestadores
 
@@ -110,3 +110,29 @@ RF05.1 e RF09.1: GET /requests exige sessão e deriva o perfil e a conta do serv
 Consulta paginada de 20 itens, com ordenação por criação e identificador, campos públicos da solicitação e sem dados cadastrais/contato do cliente. Não aceita customerId ou role pela URL. Tela Solicitações acessível na Minha conta, com rótulo conforme o perfil, atualização manual, carregamento de mais resultados e detalhes da descrição/data/período. Consulta renovada ao retornar à tela; sessão inválida encerra acesso. Envio de propostas, aceite, chat e atualização de status continuam para as próximas etapas.
 
 Sem alteração de banco. Verificação de tipos e 23 testes de unidade passaram nesta etapa. A execução direta das consultas no PostgreSQL local foi bloqueada pelo ambiente (EACCES); validação integrada no iPhone ainda necessária. Lint permanece indisponível por ausência de ESLint no ambiente. A revisão dos nomes apresentados para bairros ficou adiada a pedido da usuária.
+
+## Revisão de 18/11/2026
+
+Comparação entre o documento de requisitos revisado (RF01 a RF14) e o código, feita no roteiro docs/roteiro-telas-faltantes.md. O que foi implementado nesta revisão:
+
+| Requisito | Caso de uso | Comportamento | Documento |
+| --- | --- | --- | --- |
+| RF14, RNF02.3 | UC14.1, UC14.3, UC14.4, UC01.1 e UC02.1 fluxo 2 | Papel de administrador; consultar, cadastrar, editar, inativar e excluir contas; aprovar ou rejeitar prestador; cadastrar administrador. | administracao.md |
+| RF10.4 | UC10.4 fluxo 2 | Senha provisória definida pelo administrador, com troca obrigatória no primeiro acesso. | administracao.md |
+| RF02.1 | UC02.1 | Cadastro de prestador somente com CPF; autocadastro fica Em análise. | administracao.md |
+| RF04.4, RNF02.4 | UC04.4 | Cancelar solicitação, pelo cliente e pelo prestador da proposta aceita, com motivo, evento e aviso. | cancelamento-pedidos.md |
+| RF07.3, RF07.4 | UC07.3, UC07.4 | Prestador registra a conclusão; cliente confirma ou contesta; confirmação automática em 7 dias. O código de quatro dígitos foi removido. | andamento.md |
+| RF05.2 a RF05.4, RF06, RF09.3 | UC05.3, UC05.4, UC06.1 a UC06.3, UC09.3 | Reenvio com histórico de versões (Substituída), status Expirada, tela de versões. | propostas.md |
+| RF01.3, RNF02.4 | UC01.3 fluxos 1 e 2 | Exclusão da conta do cliente com eliminação dos dados pessoais; histórico com Usuário removido; prestador só é inativado. | exclusao-conta.md |
+| RF13 | — | Textos novos dos avisos de aceite, cancelamento, proposta não selecionada e aprovação de cadastro. | cancelamento-pedidos.md, propostas.md |
+
+Status vigentes:
+
+| Objeto | Status |
+| --- | --- |
+| Solicitação | Aberta, Aceita, Em andamento, Aguardando confirmação, Concluída, Cancelada |
+| Proposta | Pendente, Expirada, Aceita, Não selecionada, Retirada, Cancelada; Substituída só nas versões anteriores |
+| Cadastro do prestador | Em análise, Aprovado, Rejeitado |
+| Conta, na área administrativa | Ativa, Inativa, Excluída |
+
+Decisões desta revisão: a conclusão segue o fluxo do documento, sem código; a proposta mantém um identificador e guarda as versões anteriores; prestador só com CPF e aprovado por administrador; conta criada por administrador usa senha provisória; o administrador não lê conversas do chat.

@@ -38,15 +38,17 @@ ALTER TABLE maridao.service_requests DROP CONSTRAINT IF EXISTS service_requests_
 ALTER TABLE maridao.service_requests DROP CONSTRAINT IF EXISTS requests_selection_state_check;
 ALTER TABLE maridao.service_requests DROP CONSTRAINT IF EXISTS requests_progress_check;
 UPDATE maridao.service_requests SET status='Concluída' WHERE status=convert_from(convert_to('Concluída','UTF8'),'LATIN1');
-ALTER TABLE maridao.service_requests ADD CONSTRAINT service_requests_status_check CHECK(status IN ('Aberta','Cancelada','Aceita','Em andamento','Concluída'));
+ALTER TABLE maridao.service_requests ADD CONSTRAINT service_requests_status_check
+ -- 'Aguardando confirmação' (migração 014) é aceito aqui para que este arquivo possa ser reaplicado depois da 014, que redefine estas regras.
+ CHECK(status IN ('Aberta','Cancelada','Aceita','Em andamento','Aguardando confirmação','Concluída'));
 ALTER TABLE maridao.service_requests ADD CONSTRAINT requests_selection_state_check CHECK(
  (status='Aberta' AND selected_proposal_id IS NULL) OR status='Cancelada' OR
- (status IN ('Aceita','Em andamento','Concluída') AND selected_proposal_id IS NOT NULL));
+ (status IN ('Aceita','Em andamento','Aguardando confirmação','Concluída') AND selected_proposal_id IS NOT NULL));
 ALTER TABLE maridao.service_requests DROP CONSTRAINT IF EXISTS requests_progress_check;
 ALTER TABLE maridao.service_requests ADD CONSTRAINT requests_progress_check CHECK(
  (status IN ('Aberta','Aceita') AND started_at IS NULL AND completed_at IS NULL) OR
  (status='Cancelada' AND completed_at IS NULL) OR
- (status='Em andamento' AND started_at IS NOT NULL AND completed_at IS NULL) OR
+ (status IN ('Em andamento','Aguardando confirmação') AND started_at IS NOT NULL AND completed_at IS NULL) OR
  (status='Concluída' AND started_at IS NOT NULL AND completed_at IS NOT NULL AND completed_at>=started_at));
 CREATE OR REPLACE FUNCTION maridao.resolve_service_support(p_protocol uuid,p_decision text,p_reason text)
 RETURNS void LANGUAGE plpgsql SECURITY INVOKER AS $$

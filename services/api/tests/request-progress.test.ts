@@ -3,10 +3,6 @@ import assert from 'node:assert/strict';
 import type {PoolClient} from 'pg';
 import type {Profile} from '../src/auth.ts';
 import {ProgressError,validateProgress,updateProgress,progressPermissionSql} from '../src/request-progress.ts';
-import {codeDigest} from '../src/customer-confirmation.ts';
-const code='3456',salt='test-salt';
-const stepInput=(status:string)=>status==='Concluída'?{status,code}:{status};
-const confirmation={completion_code_hash:codeDigest('11111111-1111-4111-8111-111111111111',salt,code),completion_code_salt:salt,completion_code_attempts:0,code_expired:false,support_open:false};
 const id='11111111-1111-4111-8111-111111111111';
 const provider={id:'prestador-escolhido',role:'provider'} as Profile;
 function database(steps:{match:RegExp;rows?:unknown[];count?:number;values?:unknown[];fail?:boolean}[]){
@@ -18,36 +14,37 @@ function database(steps:{match:RegExp;rows?:unknown[];count?:number;values?:unkn
  }} as unknown as Pick<PoolClient,'query'>;
  return {client,commands,done:()=>assert.equal(steps.length,0)};
 }
-test('somente prestador pode pedir transições e não pode enviar identidade, datas ou etapas arbitrárias',()=>{
+test('somente prestador pode iniciar e não pode enviar identidade, datas, etapas arbitrárias nem concluir por esta rota',()=>{
  assert.throws(()=>validateProgress({...provider,role:'customer'},id,{status:'Em andamento'}),ProgressError);
  assert.throws(()=>validateProgress(provider,'outro',{status:'Em andamento'}),ProgressError);
- for(const input of [undefined,[],{},{status:'Aceita'},{status:'Aberta'},{status:'Concluída'},{status:'Concluída',code:'123'},{status:'Concluída',code,providerId:'outro'},{status:'Em andamento',started_at:'ontem'}])assert.throws(()=>validateProgress(provider,id,input),ProgressError);
- assert.equal(validateProgress(provider,id,{status:'Concluída',code}),'Concluída');
+ for(const input of [undefined,[],{},{status:'Aceita'},{status:'Aberta'},{status:'Aguardando confirmação'},{status:'Concluída'},{status:'Concluída',code:'3456'},{status:'Em andamento',providerId:'outro'},{status:'Em andamento',started_at:'ontem'}])assert.throws(()=>validateProgress(provider,id,input),(e:unknown)=>e instanceof ProgressError&&e.status===400);
+ // A conclusão saiu desta rota (lote 3): o código de quatro dígitos não é mais aceito.
+ assert.throws(()=>validateProgress(provider,id,{status:'Concluída',code:'3456'}),/cliente confirma ou contesta/);
+ assert.equal(validateProgress(provider,id,{status:'Em andamento'}),'Em andamento');
  assert.match(progressPermissionSql('provider'),/chosen.id=r.selected_proposal_id.*chosen.provider_id=\$1/);
  assert.equal(progressPermissionSql('customer'),'false AS can_manage');
 });
-test('início e conclusão bloqueiam o pedido e conferem o vínculo ao prestador da sessão',async()=>{
- for(const [previous,target] of [['Aceita','Em andamento'],['Em andamento','Concluída']]){
-  const next={id,status:target,started_at:'2026-10-22T12:00:00Z',completed_at:target==='Concluída'?'2026-10-22T13:00:00Z':null};
-  const db=database([{match:/^BEGIN$/},{match:/chosen.id=r.selected_proposal_id.*chosen.request_id=r.id[\s\S]*chosen.provider_id=\$2.*chosen.status='Aceita' FOR UPDATE OF r/,values:[id,provider.id],rows:[{status:previous,...confirmation}]},{match:/^UPDATE.*status=\$2[\s\S]*clock_timestamp\(\)[\s\S]*status=\$3/,values:[id,target,previous],rows:[next],count:1},...(target==='Concluída'?[{match:/INSERT INTO maridao.request_events/}]:[]),{match:/^COMMIT$/}]);
-  assert.deepEqual(await updateProgress(db.client,provider,id,stepInput(target)),next);db.done();
- }
+test('início bloqueia o pedido e confere o vínculo ao prestador da sessão',async()=>{
+ const next={id,status:'Em andamento',started_at:'2026-10-22T12:00:00Z',completed_at:null};
+ const db=database([{match:/^BEGIN$/},{match:/chosen.id=r.selected_proposal_id.*chosen.request_id=r.id[\s\S]*chosen.provider_id=\$2.*chosen.status='Aceita' FOR UPDATE OF r/,values:[id,provider.id],rows:[{status:'Aceita',support_open:false}]},{match:/^UPDATE.*status=\$2[\s\S]*started_at=clock_timestamp\(\)[\s\S]*status=\$3/,values:[id,'Em andamento','Aceita'],rows:[next],count:1},{match:/^COMMIT$/}]);
+ assert.deepEqual(await updateProgress(db.client,provider,id,{status:'Em andamento'}),next);db.done();
+ assert.ok(!db.commands.some(command=>/completion_code|completed_at=/.test(command)));
 });
 test('prestador não escolhido ou sem proposta aceita não altera atendimento',async()=>{
  const db=database([{match:/BEGIN/},{match:/FOR UPDATE OF r/,rows:[]},{match:/ROLLBACK/}]);
  await assert.rejects(()=>updateProgress(db.client,provider,id,{status:'Em andamento'}),error=>error instanceof ProgressError&&error.status===404);
  assert.ok(!db.commands.some(command=>command.startsWith('UPDATE')));db.done();
 });
-test('não permite concluir antes do início, reabrir concluído ou iniciar pedido aberto',async()=>{
- for(const [current,target] of [['Aceita','Concluída'],['Concluída','Em andamento'],['Aberta','Em andamento']]){
-  const db=database([{match:/BEGIN/},{match:/FOR UPDATE OF r/,rows:[{status:current}]},{match:/ROLLBACK/}]);
-  await assert.rejects(()=>updateProgress(db.client,provider,id,stepInput(target)),error=>error instanceof ProgressError&&error.status===409);db.done();
+test('não permite iniciar pedido aberto, aguardando confirmação, concluído ou cancelado, nem com protocolo aberto',async()=>{
+ for(const row of [{status:'Aberta'},{status:'Aguardando confirmação'},{status:'Concluída'},{status:'Cancelada'},{status:'Aceita',support_open:true}]){
+  const db=database([{match:/BEGIN/},{match:/FOR UPDATE OF r/,rows:[row]},{match:/ROLLBACK/}]);
+  await assert.rejects(()=>updateProgress(db.client,provider,id,{status:'Em andamento'}),error=>error instanceof ProgressError&&error.status===409);db.done();
  }
 });
-test('repetir a mesma atualização não muda os horários registrados',async()=>{
- const current={status:'Concluída',started_at:'2026-10-22T12:00:00Z',completed_at:'2026-10-22T13:00:00Z'};
+test('repetir o início não muda os horários registrados',async()=>{
+ const current={status:'Em andamento',started_at:'2026-10-22T12:00:00Z',completed_at:null};
  const db=database([{match:/BEGIN/},{match:/FOR UPDATE OF r/,rows:[current]},{match:/COMMIT/}]);
- assert.deepEqual(await updateProgress(db.client,provider,id,{status:'Concluída',code}),{id,...current});db.done();
+ assert.deepEqual(await updateProgress(db.client,provider,id,{status:'Em andamento'}),{id,...current});db.done();
 });
 test('falha de gravação desfaz a atualização',async()=>{
  const db=database([{match:/BEGIN/},{match:/FOR UPDATE OF r/,rows:[{status:'Aceita'}]},{match:/UPDATE/,fail:true},{match:/ROLLBACK/}]);

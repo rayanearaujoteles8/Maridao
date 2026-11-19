@@ -8,29 +8,36 @@
     "scheme": "mobilesdk57",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": {
+        "light": "./assets/images/icon.png",
+        "dark": "./assets/images/icon-dark.png",
+        "tinted": "./assets/images/icon-tinted.png"
+      },
+      "bundleIdentifier": "com.anonymous.mobile-sdk57"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#020300",
+        "foregroundImage": "./assets/images/android-icon-foreground-maridao.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon-maridao.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#020300",
+          "image": "./assets/images/splash-symbol.png",
+          "imageWidth": 160,
+          "dark": {
+            "backgroundColor": "#020300",
+            "image": "./assets/images/splash-symbol.png"
+          }
         }
       ]
     ],

@@ -65,3 +65,7 @@ Aplicar também 010_customer_confirmation.sql. Ela acrescenta eventos de ediçã
 ## Atualização de 17/11/2026
 
 A confirmação usa os quatro últimos dígitos do telefone cadastrado, mediante autorização explícita no pedido por dez minutos. Ver andamento.md e entrega-equipe-2026-11-17.md. Não há mais geração de seis dígitos aleatórios na versão atual.
+
+## Atualização de 18/11/2026
+
+O código de confirmação foi removido: a conclusão é registrada pelo prestador e confirmada ou contestada pelo cliente (docs/andamento.md). A edição passou a se chamar reenvio e guarda a versão anterior como Substituída; a proposta vencida fica gravada como Expirada e pode ser reenviada; a retirada não soma mais em version; a proposta Retirada não aparece mais para o cliente (docs/propostas.md). O histórico mostra o autor e o motivo do cancelamento e dá acesso às versões da proposta. As migrações 012 a 016 entram no mesmo npm run db:activate.

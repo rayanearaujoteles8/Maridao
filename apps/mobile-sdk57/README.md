@@ -54,3 +54,24 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Créditos
+
+- **Aviso em gota (toast)** — `src/components/toast-drop.tsx` (desenho) e `src/components/toast.tsx` (fila, tempos e acessibilidade).
+  O efeito é inspirado no **Sileo**, "An opinionated, physics based toast notification library for react", de Aaryan
+  (`hiaaryan` no GitHub): <https://github.com/hiaaryan/sileo>, licença **MIT** como declarada no `package.json` do pacote
+  `sileo` (o repositório e o pacote publicado não trazem arquivo de licença nem linha de copyright; por isso ficam aqui o
+  nome do projeto, o autor como aparece no GitHub e a licença declarada). O pacote **não está instalado** e nenhum arquivo
+  do Sileo foi copiado: do Sileo vêm a ideia da pílula que nasce pequena e se abre e os tempos (≈600 ms, com 150 ms de
+  atraso para abrir). O código, o desenho, as medidas, as cores (tokens do Maridão) e as regras de leitor de tela, toque e
+  movimento reduzido são deste projeto.
+  A gota é desenhada com Skia (`@shopify/react-native-skia`): formas borradas (Blur 7) e cortadas pelo alfa (ColorMatrix,
+  alfa × 20 − 10), o que faz gota, corpo e gotinha se fundirem como líquido; mesmo recurso e mesmos números da gota do
+  Segue-me (mesmo autor).
+- **Ícone e tela de abertura (iOS)** — `assets/images/icon.png` (claro), `icon-dark.png` e `icon-tinted.png`; a tela de
+  abertura nativa usa `assets/images/splash-symbol.png` sobre `#020300`, com o símbolo no mesmo lugar e tamanho do primeiro
+  quadro de `src/components/intro-animation.tsx`. Mudou algo aqui: `npx expo prebuild -p ios` e novo build (atenção: neste
+  SDK o prebuild recria a pasta `ios/` mesmo sem `--clean`).
+- **Tema claro e escuro** — tokens em `src/theme/tokens.ts`, provedor e `useTheme()` em `src/theme/index.tsx`, transição da
+  troca em `src/components/theme-transition.tsx`. A ideia do botão da lua e da troca com a tela coberta vem do projeto
+  Segue-me (mesmo autor); sem código de terceiros.

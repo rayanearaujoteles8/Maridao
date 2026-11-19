@@ -3,7 +3,10 @@ import { createDatabasePool } from './database.ts';
 import { verifyPassword } from './password.ts';
 import type { Pool } from 'pg';
 
-export type Profile = { id: string; name: string; email: string; neighborhood: string; city: string; state: string; role?: 'customer' | 'provider' };
+export type Role = 'customer' | 'provider' | 'admin';
+export type ApprovalStatus = 'Em análise' | 'Aprovado' | 'Rejeitado';
+// approvalStatus só existe para prestador; approvalReason só quando 'Rejeitado'. Administrador não tem endereço.
+export type Profile = { id: string; name: string; email: string; neighborhood: string; city: string; state: string; role?: Role; mustChangePassword?: boolean; approvalStatus?: ApprovalStatus; approvalReason?: string };
 export type Account = Profile & { password_hash: string };
 export interface AuthStore {
   findAccount(email: string): Promise<Account | undefined>;
@@ -36,10 +39,18 @@ export async function login(input: unknown, store: AuthStore = databaseAuthStore
 let pool: Pool | undefined;
 function db() { return pool ??= createDatabasePool(); }
 export async function closeAuthDatabase() { if (pool) await pool.end(); }
+// O papel é derivado do perfil existente; administrador tem precedência.
+const profileSql = `a.id,a.email,COALESCE(ad.full_name,c.full_name,p.full_name) AS name,COALESCE(c.neighborhood,array_to_string(p.neighborhoods, ', '),'') AS neighborhood,COALESCE(c.city,p.city,'') AS city,COALESCE(c.state,p.state,'') AS state,
+ CASE WHEN ad.account_id IS NOT NULL THEN 'admin' WHEN c.account_id IS NOT NULL THEN 'customer' ELSE 'provider' END AS role,a.must_change_password AS "mustChangePassword",
+ CASE WHEN ad.account_id IS NULL AND c.account_id IS NULL THEN p.approval_status END AS "approvalStatus",
+ CASE WHEN ad.account_id IS NULL AND c.account_id IS NULL AND p.approval_status='Rejeitado' THEN p.approval_reason END AS "approvalReason"
+ FROM maridao.accounts a LEFT JOIN maridao.customer_profiles c ON c.account_id=a.id LEFT JOIN maridao.provider_profiles p ON p.account_id=a.id LEFT JOIN maridao.admin_profiles ad ON ad.account_id=a.id`;
+const activeProfile = 'a.disabled_at IS NULL AND (c.account_id IS NOT NULL OR p.account_id IS NOT NULL OR ad.account_id IS NOT NULL)';
+function withoutNulls<T extends object>(row: T | undefined) { return row && Object.fromEntries(Object.entries(row).filter(([, value]) => value !== null)) as T; }
 export const databaseAuthStore: AuthStore = {
   async findAccount(email) {
-    const result = await db().query<Account>(`SELECT a.id,a.email,a.password_hash,COALESCE(c.full_name,p.full_name) AS name,COALESCE(c.neighborhood,array_to_string(p.neighborhoods, ', ')) AS neighborhood,COALESCE(c.city,p.city) AS city,COALESCE(c.state,p.state) AS state,CASE WHEN c.account_id IS NOT NULL THEN 'customer' ELSE 'provider' END AS role FROM maridao.accounts a LEFT JOIN maridao.customer_profiles c ON c.account_id=a.id LEFT JOIN maridao.provider_profiles p ON p.account_id=a.id WHERE a.email=$1 AND a.disabled_at IS NULL AND (c.account_id IS NOT NULL OR p.account_id IS NOT NULL)`, [email]);
-    return result.rows[0];
+    const result = await db().query<Account>(`SELECT a.password_hash,${profileSql} WHERE a.email=$1 AND ${activeProfile}`, [email]);
+    return withoutNulls(result.rows[0]);
   },
   async createSession(hash, id, expiry, expectedPasswordHash) {
     const client=await db().connect();
@@ -53,8 +64,8 @@ export const databaseAuthStore: AuthStore = {
     } catch(error) {await client.query('ROLLBACK');throw error;} finally {client.release();}
   },
   async findSession(hash) {
-    const result = await db().query<Profile>(`SELECT a.id,a.email,COALESCE(c.full_name,p.full_name) AS name,COALESCE(c.neighborhood,array_to_string(p.neighborhoods, ', ')) AS neighborhood,COALESCE(c.city,p.city) AS city,COALESCE(c.state,p.state) AS state,CASE WHEN c.account_id IS NOT NULL THEN 'customer' ELSE 'provider' END AS role FROM maridao.sessions s JOIN maridao.accounts a ON a.id=s.account_id LEFT JOIN maridao.customer_profiles c ON c.account_id=a.id LEFT JOIN maridao.provider_profiles p ON p.account_id=a.id WHERE s.token_hash=$1 AND s.expires_at > now() AND a.disabled_at IS NULL AND (c.account_id IS NOT NULL OR p.account_id IS NOT NULL)`, [hash]);
-    return result.rows[0];
+    const result = await db().query<Profile>(`SELECT ${profileSql.replace('FROM maridao.accounts a','FROM maridao.sessions s JOIN maridao.accounts a ON a.id=s.account_id')} WHERE s.token_hash=$1 AND s.expires_at > now() AND ${activeProfile}`, [hash]);
+    return withoutNulls(result.rows[0]);
   },
   async deleteSession(hash) { await db().query('DELETE FROM maridao.sessions WHERE token_hash=$1', [hash]); },
 };

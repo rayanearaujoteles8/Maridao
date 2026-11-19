@@ -2,9 +2,13 @@ import { useCatalog } from '@/hooks/use-catalog';
 import { SelectionField, CatalogNotice } from '@/components/selection-field';
 import { useRef, useState } from 'react';
 import { Link } from 'expo-router';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View, type TextInputProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, styles } from '@/components/access-screen';
+import { useStyles } from '@/components/access-screen';
+import { BackButton } from '@/components/back-button';
+import { FieldError, FieldInput } from '@/components/field-motion';
+import { validCpf } from '@/lib/validation';
+import { themed, useTheme } from '@/theme';
 
 type Field = 'name' | 'email' | 'phone' | 'cpf' | 'neighborhood' | 'password';
 const fields: { key: Field; label: string; props?: TextInputProps }[] = [
@@ -17,18 +21,8 @@ const fields: { key: Field; label: string; props?: TextInputProps }[] = [
 ];
 const empty = { name: '', email: '', phone: '', cpf: '', neighborhood: '', password: '' };
 
-function validCpf(value: string) {
-  const digits = value.replace(/\D/g, '');
-  if (!/^\d{11}$/.test(digits) || /^(\d)\1{10}$/.test(digits)) return false;
-  for (const length of [9, 10]) {
-    const sum = [...digits.slice(0, length)].reduce((total, digit, i) => total + Number(digit) * (length + 1 - i), 0);
-    const check = (sum * 10) % 11;
-    if (Number(digits[length]) !== (check === 10 ? 0 : check)) return false;
-  }
-  return true;
-}
-
 export default function CustomerRegistration() {
+ const s=useS();const styles=useStyles();const {colors}=useTheme();
   const catalog = useCatalog();
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
@@ -79,7 +73,7 @@ export default function CustomerRegistration() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={s.fill} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-          <Link href="/" style={styles.back}>← Voltar ao início</Link>
+          <BackButton href="/" label="Voltar ao início" />
           <Text accessibilityRole="header" style={styles.title}>Cadastro de cliente</Text>
           <Text style={styles.description}>Encontre profissionais perto de você.</Text>
           <View style={s.location}><Text style={s.locationTitle}>Palmas – TO</Text><Text style={styles.note}>Nesta primeira versão, atendemos somente Palmas.</Text></View>
@@ -88,9 +82,9 @@ export default function CustomerRegistration() {
           {!catalog.data ? <CatalogNotice error={catalog.error} retry={catalog.retry} /> : null}
           {fields.map(field => <View key={field.key} style={s.group}>
             <Text style={s.label}>{field.label}</Text>
-            {field.key === 'neighborhood' ? <SelectionField label="Bairro ou quadra em Palmas" options={catalog.data?.neighborhoods ?? []} values={values.neighborhood ? [values.neighborhood] : []} disabled={sending || !catalog.data} error={errors.neighborhood} onChange={selected => { setValues(old => ({ ...old, neighborhood: selected[0] ?? '' })); setErrors(old => ({ ...old, neighborhood: undefined })); }} /> : <TextInput {...field.props} editable={!sending} value={values[field.key]} autoCorrect={false} secureTextEntry={field.key === 'password' && !visiblePassword} accessibilityLabel={field.label} accessibilityHint={errors[field.key]} placeholderTextColor="#64705C" style={[s.input, errors[field.key] ? s.invalid : undefined]} onChangeText={text => { setValues(previous => ({ ...previous, [field.key]: text })); setErrors(previous => ({ ...previous, [field.key]: undefined })); setMessage(''); }} />}
-            {errors[field.key] ? <Text style={s.error}>{errors[field.key]}</Text> : null}
-            {field.key === 'password' ? <Pressable accessibilityRole="button" accessibilityLabel={visiblePassword ? 'Ocultar senha' : 'Mostrar senha'} onPress={() => setVisiblePassword(value => !value)} style={s.toggle}><Text>{visiblePassword ? 'Ocultar senha' : 'Mostrar senha'}</Text></Pressable> : null}
+            {field.key === 'neighborhood' ? <SelectionField label="Bairro ou quadra em Palmas" options={catalog.data?.neighborhoods ?? []} values={values.neighborhood ? [values.neighborhood] : []} disabled={sending || !catalog.data} error={errors.neighborhood} onChange={selected => { setValues(old => ({ ...old, neighborhood: selected[0] ?? '' })); setErrors(old => ({ ...old, neighborhood: undefined })); }} /> : <FieldInput invalid={!!errors[field.key]} borderColor={colors.borderBold} {...field.props} editable={!sending} value={values[field.key]} autoCorrect={false} secureTextEntry={field.key === 'password' && !visiblePassword} accessibilityLabel={field.label} accessibilityHint={errors[field.key]} placeholderTextColor={colors.placeholder} style={[s.input, errors[field.key] ? s.invalid : undefined]} onChangeText={text => { setValues(previous => ({ ...previous, [field.key]: text })); setErrors(previous => ({ ...previous, [field.key]: undefined })); setMessage(''); }} />}
+            <FieldError style={s.error}>{errors[field.key]}</FieldError>
+            {field.key === 'password' ? <Pressable accessibilityRole="button" accessibilityLabel={visiblePassword ? 'Ocultar senha' : 'Mostrar senha'} onPress={() => setVisiblePassword(value => !value)} style={s.toggle}><Text style={styles.plain}>{visiblePassword ? 'Ocultar senha' : 'Mostrar senha'}</Text></Pressable> : null}
           </View>)}
           <Pressable accessibilityRole="button" accessibilityState={{ disabled: sending, busy: sending }} disabled={sending} style={({ pressed }) => [s.button, (pressed || sending) && { opacity: 0.7 }]} onPress={review}><Text style={s.buttonText}>{sending ? 'Criando cadastro…' : 'Criar conta'}</Text></Pressable>
           <Link href="/entrar" style={styles.back}>Já tenho conta</Link>
@@ -99,12 +93,12 @@ export default function CustomerRegistration() {
     </SafeAreaView>
   );
 }
-const s = StyleSheet.create({
-  fill: { flex: 1 }, group: { gap: 8 }, label: { color: colors.black, fontSize: 16, fontWeight: '600' },
-  input: { minHeight: 54, borderWidth: 1, borderColor: '#64705C', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, color: colors.black, backgroundColor: colors.white },
-  invalid: { borderColor: '#A32121', borderWidth: 2 }, error: { color: '#A32121', fontSize: 14 },
-  location: { backgroundColor: colors.pale, borderRadius: 18, padding: 18, gap: 6 }, locationTitle: { fontSize: 19, fontWeight: '700', color: colors.black },
+const useS = themed(colors => StyleSheet.create({
+  fill: { flex: 1 }, group: { gap: 8 }, label: { color: colors.text, fontSize: 16, fontWeight: '600' },
+  input: { minHeight: 54, borderWidth: 1, borderColor: colors.borderBold, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 17, color: colors.text, backgroundColor: colors.bg },
+  invalid: { borderColor: colors.danger, borderWidth: 2 }, error: { color: colors.danger, fontSize: 14 },
+  location: { backgroundColor: colors.accentSoft, borderRadius: 18, padding: 18, gap: 6 }, locationTitle: { fontSize: 19, fontWeight: '700', color: colors.onAccentSoft},
   toggle: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start', paddingHorizontal: 4 },
-  button: { backgroundColor: colors.black, padding: 18, borderRadius: 16, minHeight: 56, alignItems: 'center' }, buttonText: { color: colors.white, fontWeight: '700', fontSize: 17 },
-  message: { color: colors.black, backgroundColor: colors.pale, padding: 16, borderRadius: 14, fontSize: 16, lineHeight: 24 },
-});
+  button: { backgroundColor: colors.primary, padding: 18, borderRadius: 16, minHeight: 56, alignItems: 'center' }, buttonText: { color: colors.onPrimary, fontWeight: '700', fontSize: 17 },
+  message: { color: colors.onAccentSoft, backgroundColor: colors.accentSoft, padding: 16, borderRadius: 14, fontSize: 16, lineHeight: 24 },
+}));

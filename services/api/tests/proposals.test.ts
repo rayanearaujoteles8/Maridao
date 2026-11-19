@@ -4,6 +4,7 @@ import {validateProposal,ProposalInputError,validRequestId} from '../src/proposa
 import {insertProposalQuery,proposalAccessQuery,listProposalsQuery,sendProposal} from '../src/proposals.ts';
 import {acceptProposal,validateAcceptance,AcceptanceError} from '../src/proposal-acceptance.ts';
 import type {Profile} from '../src/auth.ts';
+import {WorkflowError} from '../src/workflow-error.ts';
 import type {PoolClient} from 'pg';
 const id='11111111-1111-4111-8111-111111111111';
 const sample={amount:'150,25',description:'Pintura de uma parede',estimatedDuration:'Um dia',validUntil:'2099-12-31'};
@@ -33,7 +34,7 @@ test('aceite bloqueia pedido, confere validade e grava escolha e demais status j
   {match:/^BEGIN$/},
   {match:/customer_id=\$2 FOR UPDATE/,values:[id,customer.id],rows:[{status:'Aberta',selected_proposal_id:null}]},
   {match:/clock_timestamp\(\).*request_id=\$1 AND id=\$2 FOR UPDATE/,values:[id,proposalId],rows:[{status:'Pendente',expired:false,version:1}]},
-  {match:/SET status='Não selecionada'.*status='Pendente'/,values:[id,proposalId],rowCount:2},
+  {match:/SET status='Não selecionada'.*status='Pendente' AND valid_until >= /,values:[id,proposalId],rowCount:2},
   {match:/SET status='Aceita'/,values:[id,proposalId],rowCount:1},
   {match:/selected_proposal_id=\$2.*customer_id=\$3/,values:[id,proposalId,customer.id],rowCount:1},
   {match:/^COMMIT$/},
@@ -44,10 +45,12 @@ test('aceite bloqueia pedido, confere validade e grava escolha e demais status j
 test('pedido de outro cliente, proposta de outro pedido, expirada ou retirada não grava nada',async()=>{
  for(const state of ['other-customer','other-request','expired','withdrawn','already-selected']){
   const steps:{match:RegExp;rows?:unknown[]}[]=[{match:/^BEGIN$/},{match:/customer_id=\$2 FOR UPDATE/,rows:state==='other-customer'?[]:[{status:state==='already-selected'?'Aceita':'Aberta',selected_proposal_id:'outra'}]}];
-  if(!['other-customer','already-selected'].includes(state))steps.push({match:/request_id=\$1 AND id=\$2 FOR UPDATE/,rows:state==='other-request'?[]:[{status:state==='withdrawn'?'Retirada':'Pendente',expired:state==='expired'}]});
+  if(!['other-customer','already-selected'].includes(state))steps.push({match:/request_id=\$1 AND id=\$2 FOR UPDATE/,rows:state==='other-request'?[]:[{status:state==='withdrawn'?'Retirada':'Pendente',expired:state==='expired',version:1}]});
   steps.push({match:/^ROLLBACK$/});
   const db=scriptedDatabase(steps);
-  await assert.rejects(()=>acceptProposal(db.client,customer,id,proposalId),AcceptanceError);
+  // Lote 4: as recusas por status levam "code" (WorkflowError; AcceptanceError passou a ser uma WorkflowError).
+  const code={expired:'PROPOSAL_EXPIRED',withdrawn:'PROPOSAL_NOT_AVAILABLE','already-selected':'REQUEST_NOT_OPEN'}[state];
+  await assert.rejects(()=>acceptProposal(db.client,customer,id,proposalId),(e:unknown)=>e instanceof WorkflowError&&e.status===(code?409:404)&&e.details?.code===code);
   assert.ok(!db.commands.some(command=>command.startsWith('UPDATE')));db.done();
  }
 });
@@ -99,6 +102,9 @@ test('cliente vê apenas propostas dos seus pedidos e prestador apenas a própri
  const received=listProposalsQuery(customer,id,'2'),sent=listProposalsQuery(provider,id);
  assert.match(received.text,/r.customer_id=\$2/);assert.deepEqual(received.values,[id,'cliente',20]);
  assert.match(sent.text,/o.provider_id=\$2/);
+ // UC05.4 / UC06.1: a proposta retirada some da lista do cliente; o prestador continua vendo a própria.
+ assert.match(received.text,/r.customer_id=\$2 AND o.status<>'Retirada'/);assert.ok(!sent.text.includes("o.status<>'Retirada'"));
+ for(const query of [received,sent])for(const field of ['versions_count','has_previous_versions','sent_at','can_resend','can_withdraw','can_accept','expired'])assert.match(query.text,new RegExp(`AS ${field}\\b`));
  for(const secret of ['document_encrypted','password_hash','phone','email'])assert.ok(!received.text.includes(secret));
  assert.throws(()=>listProposalsQuery(customer,id,'0'));
  assert.throws(()=>listProposalsQuery({...customer,role:undefined},id));

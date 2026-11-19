@@ -1,14 +1,14 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {encryptMessage,decryptMessage,validateReview,cursor,reviewService,sendMessage} from '../src/team-workflows.ts';
+import {chatOpen,encryptMessage,decryptMessage,validateReview,cursor,reviewService,sendMessage} from '../src/team-workflows.ts';
 import {WorkflowError} from '../src/workflow-error.ts';
-import {phoneCompletionCode} from '../src/customer-confirmation.ts';
 import {mailEnabled,password} from '../src/account-management.ts';
 import type {PoolClient} from 'pg';
 import type {Profile} from '../src/auth.ts';
 const id='11111111-1111-4111-8111-111111111111',provider={id:'provider',role:'provider'} as Profile,customer={id:'customer',role:'customer'} as Profile;
-test('quatro dígitos preservam zero inicial, normalizam telefone e rejeitam cadastro inválido',()=>{
- assert.equal(phoneCompletionCode('(63) 99912-0345'),'0345');assert.equal(phoneCompletionCode('6332123456'),'3456');for(const v of [null,12345678,'1234',''])assert.throws(()=>phoneCompletionCode(v),Error);
+test('chat aceita mensagens enquanto o atendimento não foi concluído nem cancelado',()=>{
+ for(const status of ['Aceita','Em andamento','Aguardando confirmação'])assert.equal(chatOpen(status),true);
+ for(const status of ['Aberta','Concluída','Cancelada',''])assert.equal(chatOpen(status),false);
 });
 test('avaliação rejeita autoria injetada, notas fracionárias e comentários acima do limite',()=>{
  for(const v of [{rating:0,comment:''},{rating:6,comment:''},{rating:2.5,comment:''},{rating:5,comment:'x'.repeat(1001)},{rating:5,comment:'',providerId:id}])assert.throws(()=>validateReview(v),WorkflowError);

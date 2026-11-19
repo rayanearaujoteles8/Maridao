@@ -5,7 +5,7 @@ import {fileURLToPath} from 'node:url';
 const base='C:/Program Files/PostgreSQL';
 const installed=existsSync(base)?readdirSync(base).sort((a,b)=>b.localeCompare(a,undefined,{numeric:true})).map(v=>join(base,v,'bin','psql.exe')).find(p=>existsSync(p)):undefined;
 const executable=installed??'psql';
-console.log('Aplicando as atualizações 009, 010 e 011 no banco maridao. Informe a senha do usuário postgres no terminal.');
+console.log('Aplicando as atualizações 009 a 016 no banco maridao. Informe a senha do usuário postgres no terminal.');
 const environment={...process.env};delete environment.PGPASSWORD;
 const result=spawnSync(executable,['-h',process.env.PGHOST??'127.0.0.1','-p',process.env.PGPORT??'5432','-U','postgres','-d','maridao','-W','-f',fileURLToPath(new URL('../migrations/activate_team.sql',import.meta.url))],{stdio:'inherit',env:environment,windowsHide:true});
 if(result.error)console.error('Não foi possível abrir o SQL Shell. Confira se o PostgreSQL está instalado.');

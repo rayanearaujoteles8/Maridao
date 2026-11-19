@@ -14,9 +14,9 @@ export async function registerProvider(input: unknown) {
   await client.query('BEGIN');
   const account=await client.query<{id:string}>('INSERT INTO maridao.accounts (email,password_hash) VALUES ($1,$2) RETURNING id',[data.email,hash]);
   const id=account.rows[0].id;
-  await client.query(`INSERT INTO maridao.provider_profiles (account_id,full_name,phone,document_type,document_encrypted,document_fingerprint,categories,specialties,neighborhoods,availability) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,[id,data.name,data.phone,data.documentType,document.encrypted,document.fingerprint,data.categories,data.specialties,data.neighborhoods,data.availability]);
+  await client.query(`INSERT INTO maridao.provider_profiles (account_id,full_name,phone,document_type,document_encrypted,document_fingerprint,categories,specialties,neighborhoods,availability,approval_status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'Em análise')`,[id,data.name,data.phone,data.documentType,document.encrypted,document.fingerprint,data.categories,data.specialties,data.neighborhoods,data.availability]);
   await client.query('COMMIT');
-  return {id,name:data.name,city:'Palmas',state:'TO'};
+  return {id,name:data.name,city:'Palmas',state:'TO',approvalStatus:'Em análise'};
  } catch(error) { try { await client.query('ROLLBACK'); } catch {} throw error; }
  finally {client.release();}
 }

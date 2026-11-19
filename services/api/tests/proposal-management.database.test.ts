@@ -1,5 +1,8 @@
 import {readFileSync} from 'node:fs';
-import {issueCompletionCode,openSupport,CompletionError,supportQuery} from '../src/customer-confirmation.ts';
+import {openSupport,CompletionError,supportQuery} from '../src/customer-confirmation.ts';
+import {completionAction} from '../src/request-completion.ts';
+import {WorkflowError} from '../src/workflow-error.ts';
+import {completionConstraints,completionRoutine} from './temporary-schema.ts';
 import {updateProgress,ProgressError} from '../src/request-progress.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,14 +15,14 @@ import {acceptProposal,AcceptanceError} from '../src/proposal-acceptance.ts';
 import {historyQuery} from '../src/history.ts';
 
 // Opt-in; all fixtures and changes are rolled back, including function commits.
-test('PostgreSQL: edição, retirada, aceite desatualizado, histórico de 25 registros e isolamento',{skip:process.env.MARIDAO_DB_TEST!=='1'},async()=>{
+test('PostgreSQL: reenvio com histórico, retirada, aceite desatualizado, histórico de 25 registros e isolamento',{skip:process.env.MARIDAO_DB_TEST!=='1'},async()=>{
  const pool=createDatabasePool(),raw=await pool.connect();
  const temporary=process.env.MARIDAO_DB_TEMP==='1';
  const client={query:(text:string,values?:unknown[])=>raw.query(temporary?text.replaceAll('maridao.','pg_temp.'):text,values)};
  try{
   await client.query('BEGIN');
   if(temporary){
-   for(const table of ['accounts','customer_profiles','provider_profiles','service_requests','proposals'])await raw.query(`CREATE TEMP TABLE ${table} (LIKE maridao.${table} INCLUDING ALL) ON COMMIT DROP`);
+   for(const table of ['accounts','customer_profiles','provider_profiles','service_requests','proposals','proposal_versions'])await raw.query(`CREATE TEMP TABLE ${table} (LIKE maridao.${table} INCLUDING ALL) ON COMMIT DROP`);
    await raw.query('ALTER TABLE pg_temp.proposals ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1 CHECK(version>0), ADD COLUMN IF NOT EXISTS updated_at timestamptz, ADD COLUMN IF NOT EXISTS withdrawn_at timestamptz');
   }
   if(temporary){
@@ -31,6 +34,9 @@ test('PostgreSQL: edição, retirada, aceite desatualizado, histórico de 25 reg
    }
    const routine=migration.match(/CREATE OR REPLACE FUNCTION[\s\S]*?\$\$;/)?.[0];
    if(routine)await raw.query(routine.replaceAll('maridao.','pg_temp.'));
+   // 014: regras do novo status e protocolo de suporte sem o código de quatro dígitos.
+   for(const sql of completionConstraints())await raw.query(sql);
+   await raw.query(completionRoutine('resolve_service_support'));
   }
   const columns=await client.query("SELECT column_name FROM information_schema.columns WHERE table_schema='maridao' AND table_name='proposals' AND column_name IN ('version','updated_at','withdrawn_at')");
   if(!temporary)assert.equal(columns.rows.length,3,'Aplique migrations/009_proposal_management.sql como postgres antes deste teste.');
@@ -55,41 +61,47 @@ test('PostgreSQL: edição, retirada, aceite desatualizado, histórico de 25 reg
   }} as unknown as Pick<PoolClient,'query'>;
   const form={version:1,amount:'250,50',description:'Descrição alterada',estimatedDuration:'Dois dias',validUntil:'2099-12-31'};
   const updated=await changeProposal(wrapped,provider,requests[0]!,proposals[0]!,form);assert.equal(updated.version,2);
+  // Lote 4: a edição virou reenvio — a versão anterior fica guardada como "Substituída" e a vigente segue "Pendente" com os novos dados.
+  assert.deepEqual((await client.query('SELECT version,amount,description,status,status_before FROM maridao.proposal_versions WHERE proposal_id=$1',[proposals[0]])).rows,[{version:1,amount:'100.00',description:'Proposta fictícia',status:'Substituída',status_before:'Pendente'}]);
+  assert.deepEqual((await client.query('SELECT status,version,amount,description FROM maridao.proposals WHERE id=$1',[proposals[0]])).rows[0],{status:'Pendente',version:2,amount:'250.50',description:'Descrição alterada'});
   await assert.rejects(()=>acceptProposal(wrapped,customer,requests[0]!,proposals[0]!,{version:1}),AcceptanceError);
   await assert.rejects(()=>changeProposal(wrapped,other,requests[0]!,proposals[0]!,form),AcceptanceError);
-  await changeProposal(wrapped,provider,requests[1]!,proposals[1]!,{version:1},true);
-  await assert.rejects(()=>acceptProposal(wrapped,customer,requests[1]!,proposals[1]!,{version:2}),AcceptanceError);
+  // A retirada não cria versão nem incrementa "version".
+  assert.equal((await changeProposal(wrapped,provider,requests[1]!,proposals[1]!,{version:1},true)).version,1);
+  assert.equal((await client.query('SELECT count(*)::integer AS count FROM maridao.proposal_versions WHERE proposal_id=$1',[proposals[1]])).rows[0].count,0);
+  for(const version of [1,2])await assert.rejects(()=>acceptProposal(wrapped,customer,requests[1]!,proposals[1]!,{version}),(e:unknown)=>e instanceof WorkflowError&&e.details?.code==='PROPOSAL_NOT_AVAILABLE');
   await acceptProposal(wrapped,customer,requests[0]!,proposals[0]!,{version:2});
-  await assert.rejects(()=>changeProposal(wrapped,provider,requests[0]!,proposals[0]!,{...form,version:2}),AcceptanceError);
+  await assert.rejects(()=>changeProposal(wrapped,provider,requests[0]!,proposals[0]!,{...form,version:2}),(e:unknown)=>e instanceof WorkflowError&&e.details?.code==='PROPOSAL_NOT_RESENDABLE'&&e.details?.status==='Aceita');
   await updateProgress(wrapped,provider,requests[0]!,{status:'Em andamento'});
-  const challenge=await issueCompletionCode(wrapped,customer,requests[0]!,{});
-  const wrong=challenge.code==='9999'?'0000':'9999';
-  await assert.rejects(()=>updateProgress(wrapped,provider,requests[0]!,{status:'Concluída',code:wrong}),CompletionError);
-  assert.equal((await client.query('SELECT completion_code_attempts FROM maridao.service_requests WHERE id=$1',[requests[0]])).rows[0].completion_code_attempts,1);
-  await updateProgress(wrapped,provider,requests[0]!,{status:'Concluída',code:challenge.code});
-  const completed=(await client.query('SELECT status,completion_code_hash,completed_at FROM maridao.service_requests WHERE id=$1',[requests[0]])).rows[0];
-  assert.equal(completed.status,'Concluída');assert.equal(completed.completion_code_hash,null);assert.ok(completed.completed_at);
+  // A conclusão não é mais validada por código: o prestador registra e o cliente confirma.
+  await assert.rejects(()=>updateProgress(wrapped,provider,requests[0]!,{status:'Concluída',code:'3456'}),ProgressError);
+  await assert.rejects(()=>completionAction(wrapped,customer,requests[0]!,'confirm',{}),WorkflowError);
+  await assert.rejects(()=>completionAction(wrapped,other,requests[0]!,'report',{}),WorkflowError);
+  await completionAction(wrapped,provider,requests[0]!,'report',{});
+  assert.equal((await client.query('SELECT status FROM maridao.service_requests WHERE id=$1',[requests[0]])).rows[0].status,'Aguardando confirmação');
+  await completionAction(wrapped,customer,requests[0]!,'confirm',{});
+  const completed=(await client.query('SELECT status,completion_confirmed_by,completed_at FROM maridao.service_requests WHERE id=$1',[requests[0]])).rows[0];
+  assert.equal(completed.status,'Concluída');assert.equal(completed.completion_confirmed_by,'customer');assert.ok(completed.completed_at);
+  // Protocolo de suporte: só para serviço não realizado, antes do início; enquanto aberto, o atendimento não começa.
   await acceptProposal(wrapped,customer,requests[3]!,proposals[3]!,{version:1});
-  await updateProgress(wrapped,provider,requests[3]!,{status:'Em andamento'});
-  const protocol=await openSupport(wrapped,customer,requests[3]!,{reason:'nao_realizado',description:'Relato fictício para teste de suporte.'});
-  await assert.rejects(()=>issueCompletionCode(wrapped,customer,requests[3]!,{}),CompletionError);
-  await assert.rejects(()=>updateProgress(wrapped,provider,requests[3]!,{status:'Concluída',code:'3456'}),CompletionError);
+  await assert.rejects(()=>openSupport(wrapped,customer,requests[3]!,{reason:'discordancia',description:'Motivo que não existe mais.'}),CompletionError);
+  const protocol=await openSupport(wrapped,customer,requests[3]!,{reason:'nao_realizado',description:'Prestador não compareceu; atendimento não foi iniciado.'});
+  await assert.rejects(()=>openSupport(wrapped,customer,requests[3]!,{reason:'nao_realizado',description:'Segundo relato.'}),CompletionError);
+  await assert.rejects(()=>updateProgress(wrapped,provider,requests[3]!,{status:'Em andamento'}),ProgressError);
   const support=supportQuery(customer,requests[3]!);assert.equal((await client.query(support.text,support.values)).rows.length,1);
+  await acceptProposal(wrapped,customer,requests[4]!,proposals[4]!,{version:1});
+  await updateProgress(wrapped,provider,requests[4]!,{status:'Em andamento'});
+  await assert.rejects(()=>openSupport(wrapped,customer,requests[4]!,{reason:'nao_realizado',description:'Depois do início não há protocolo.'}),CompletionError);
   if(temporary){
-   await client.query('SELECT maridao.resolve_service_support($1,$2,$3)',[protocol.id,'cancelar','Serviço não realizado confirmado na análise fictícia.']);
-   const cancelled=(await client.query('SELECT status,started_at,completed_at,selected_proposal_id FROM maridao.service_requests WHERE id=$1',[requests[3]])).rows[0];
-   assert.equal(cancelled.status,'Cancelada');assert.ok(cancelled.started_at);assert.equal(cancelled.completed_at,null);assert.equal(cancelled.selected_proposal_id,proposals[3]);
+   await client.query('SELECT maridao.resolve_service_support($1,$2,$3)',[protocol.id,'cancelar','Ausência confirmada no teste fictício.']);
+   const absent=(await client.query('SELECT status,started_at,completed_at,selected_proposal_id FROM maridao.service_requests WHERE id=$1',[requests[3]])).rows[0];
+   assert.equal(absent.status,'Cancelada');assert.equal(absent.started_at,null);assert.equal(absent.completed_at,null);assert.equal(absent.selected_proposal_id,proposals[3]);
    assert.equal((await client.query(support.text,support.values)).rows[0].status,'Cancelado');
-   await acceptProposal(wrapped,customer,requests[4]!,proposals[4]!,{version:1});
-   const noShow=await openSupport(wrapped,customer,requests[4]!,{reason:'nao_realizado',description:'Prestador não compareceu; atendimento não foi iniciado.'});
-   await assert.rejects(()=>updateProgress(wrapped,provider,requests[4]!,{status:'Em andamento'}),ProgressError);
-   await client.query('SELECT maridao.resolve_service_support($1,$2,$3)',[noShow.id,'cancelar','Ausência confirmada no teste fictício.']);
-   const absent=(await client.query('SELECT status,started_at FROM maridao.service_requests WHERE id=$1',[requests[4]])).rows[0];assert.equal(absent.status,'Cancelada');assert.equal(absent.started_at,null);
   }
   const events=(await client.query('SELECT action FROM maridao.request_events WHERE request_id=$1 ORDER BY created_at,id',[requests[0]])).rows;
-  assert.deepEqual(events.map(e=>e.action),['proposal_edited','confirmation_code_issued','service_completed']);
+  assert.deepEqual(events.map(e=>e.action),['proposal_resent','completion_reported','completion_confirmed']);
   await client.query("UPDATE maridao.service_requests SET status='Cancelada' WHERE id=$1",[requests[2]]);
-  await assert.rejects(()=>changeProposal(wrapped,provider,requests[2]!,proposals[2]!,form),AcceptanceError);
+  await assert.rejects(()=>changeProposal(wrapped,provider,requests[2]!,proposals[2]!,form),(e:unknown)=>e instanceof WorkflowError&&e.details?.code==='REQUEST_NOT_OPEN'&&e.details?.status==='Cancelada');
   for(const user of [customer,provider]){
    const first=historyQuery(user,{}),second=historyQuery(user,{page:'2'});
    const a=(await client.query(first.text,first.values)).rows,b=(await client.query(second.text,second.values)).rows;

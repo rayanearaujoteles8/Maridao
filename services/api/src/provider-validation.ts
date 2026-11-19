@@ -35,8 +35,9 @@ export function validateProvider(input: unknown) {
  const documentType=text('documentType',4);
  const rawDocument=text('document',25).toUpperCase();
  const document=rawDocument.replace(/[.\s/\-]/g,'');
- if (!['CPF','CNPJ'].includes(documentType)) errors.documentType='Selecione CPF ou CNPJ.';
- if (documentType==='CPF' ? !validCpf(document) : documentType==='CNPJ' ? !validCnpj(document) : true) errors.document='Confira os dados do documento.';
+ // RF02.1: o prestador se cadastra somente com CPF.
+ if (documentType!=='CPF') errors.documentType='O cadastro de prestador aceita somente CPF.';
+ if (!validCpf(document)) errors.document='Confira os números do CPF.';
  const list=(key:string,limit:number)=>{
   const value=source[key];
   if (!Array.isArray(value) || value.length<1 || value.length>limit || value.some(item=>typeof item!=='string'||!item.trim()||item.trim().length>100)) { errors[key]='Informe pelo menos um item, com até 100 caracteres por item.'; return [] as string[]; }

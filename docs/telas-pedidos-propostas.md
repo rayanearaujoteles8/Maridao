@@ -9,3 +9,16 @@ Rastreabilidade: RF04/UC04.1–UC04.3, RF05/UC05.1–UC05.2, RF06/UC06.1–UC06.
 Verificação de tipos e três testes mobile passaram. Lint foi tentado; ESLint continua sem configuração. Exportação web usada como verificação de geração. A conferência visual e de navegação no iPhone, incluindo fontes ampliadas, ainda está pendente. Manter issue aberta até essa validação.
 
 Teste manual: cliente abre Meus pedidos, expande/recolhe detalhes, consulta propostas e confirma/cancela um aceite. Prestador abre pedidos compatíveis e proposta enviada; verificar valor, prazo, validade e ações de início/conclusão. Conferir pedido Cancelado sem envio/aceite, lista vazia, falha de rede, atualização e carregar mais. Usar contas fictícias.
+
+## Atualização de 18/11/2026
+
+As telas de solicitações e propostas mudaram com os fluxos novos:
+
+- Pedidos é uma aba da área logada (Início / Profissionais / Pedidos); o prestador não tem a aba Profissionais. As listas aceitam puxar para atualizar.
+- O bloco de andamento mostra a etapa Aguardando confirmação. O prestador tem Registrar conclusão; o cliente tem Confirmar Conclusão e Contestar Conclusão, em folha. Não há mais campo de código.
+- Cancelar Solicitação abre em folha, com motivo e confirmação. Pedido cancelado mostra quem cancelou e o motivo, quando a API os devolve.
+- Em propostas, Editar proposta virou Reenviar proposta; a proposta Expirada aparece marcada; Ver versões abre a tela Versões da Proposta.
+- Para o prestador, pedido de cliente com conta excluída mostra Cliente: Usuário removido.
+- As telas seguem o tema claro ou escuro.
+
+A frase acima sobre esta entrega não implementar edição e retirada de propostas refere-se a 22/10/2026; as duas existem desde 27/10/2026. Rastreabilidade acrescentada: UC04.4, UC05.3, UC05.4, UC07.3, UC07.4 e UC09.3. A conferência em iPhone físico, com fontes ampliadas, continua pendente.

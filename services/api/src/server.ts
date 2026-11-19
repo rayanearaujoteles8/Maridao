@@ -1,4 +1,4 @@
-import { closeRequestDatabase } from './requests.ts';
+import { closeRequestDatabase, runAutoConfirm, runExpireProposals } from './requests.ts';
 import {closeTeamDatabase} from './team-routes.ts';
 import { closeProposalDatabase } from './proposals.ts';
 import { closeSearchDatabase } from './provider-search.ts';
@@ -23,6 +23,16 @@ server.on('error', (error: NodeJS.ErrnoException) => {
   console.error(`Não foi possível iniciar a API (${error.code ?? 'erro desconhecido'}). ${reason}`);
   process.exitCode = 1;
 });
+// RN07: confirmação automática das conclusões sem resposta. Uma passada na subida e outra a cada dez minutos;
+// o temporizador não segura o processo aberto e é desligado no encerramento.
+const autoConfirm = () => {
+  runAutoConfirm().then(ids => { if (ids.length) console.log(`Conclusões confirmadas automaticamente: ${ids.length}.`); }, () => { console.error('Não foi possível aplicar a confirmação automática de conclusões.'); });
+  // RN04: na mesma passada, as propostas pendentes com validade vencida passam a "Expirada".
+  runExpireProposals().then(ids => { if (ids.length) console.log(`Propostas expiradas: ${ids.length}.`); }, () => { console.error('Não foi possível aplicar a expiração das propostas.'); });
+};
+const autoConfirmTimer = setInterval(autoConfirm, 10 * 60_000);
+autoConfirmTimer.unref();
+server.once('listening', autoConfirm);
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.on(signal, () => { server.close(() => { void closeTeamDatabase(); void closeDatabase(); void closeAuthDatabase(); void closeProviderDatabase(); void closeSearchDatabase(); void closeRequestDatabase(); void closeProposalDatabase(); }); });
+  process.on(signal, () => { clearInterval(autoConfirmTimer); server.close(() => { void closeTeamDatabase(); void closeDatabase(); void closeAuthDatabase(); void closeProviderDatabase(); void closeSearchDatabase(); void closeRequestDatabase(); void closeProposalDatabase(); }); });
 }

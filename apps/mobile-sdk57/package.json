@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~58.0.9",
+    "@shopify/react-native-skia": "2.14.0",
     "expo": "^58.0.0",
     "expo-constants": "~58.0.9",
     "expo-crypto": "~58.0.8",
@@ -37,8 +38,8 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
     "test:calendar": "node --test tests/calendar.test.mjs",

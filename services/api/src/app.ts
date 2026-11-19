@@ -12,9 +12,13 @@ import express, { type ErrorRequestHandler } from 'express';
 import { registerCustomer } from './customers.ts';
 import { InputError } from './customer-validation.ts';
 import { registrationLimit } from './registration-limit.ts';
+import { sessionGuard } from './session-guard.ts';
+import { adminRoutes } from './admin-routes.ts';
 export const app = express();
 app.disable('x-powered-by');
 app.use((_request, response, next) => { response.set('Cache-Control', 'no-store'); response.set('X-Content-Type-Options', 'nosniff'); next(); });
+// Trava central: senha provisória pendente e papel de administrador (antes de qualquer rota).
+app.use(sessionGuard());
 app.use(express.json({ limit: '16kb' }));
 // Liveness only: this endpoint does not claim database readiness.
 app.get('/health', (_request, response) => {
@@ -27,6 +31,7 @@ app.use(teamRoutes);
 app.use('/requests', requestRoutes);
 app.use('/requests', proposalRoutes);
 app.use('/providers', searchRoutes);
+app.use('/admin', adminRoutes);
 app.post('/customers', registrationLimit, async (request, response, next) => {
   if (!request.is('application/json')) { response.status(415).json({ error: 'Envie os dados em JSON.' }); return; }
   try {
@@ -42,7 +47,7 @@ app.post('/customers', registrationLimit, async (request, response, next) => {
 });
 app.post('/providers', registrationLimit, async (request, response, next) => {
  if (!request.is('application/json')) {response.status(415).json({error:'Envie os dados em JSON.'});return;}
- try {response.status(201).json({message:'Cadastro criado com sucesso.',provider:await registerProvider(request.body)});}
+ try {response.status(201).json({message:'Cadastro recebido. Seu perfil será liberado após a aprovação de um administrador.',provider:await registerProvider(request.body)});}
  catch(error){
   if(error instanceof ProviderInputError){response.status(400).json({error:error.message,fields:error.fields});return;}
   if(error && typeof error==='object' && 'code' in error && error.code==='23505'){response.status(409).json({error:'Já existe cadastro com os dados informados.'});return;}

@@ -6,7 +6,8 @@ import {createDatabasePool} from '../src/database.ts';
 import {hashPassword,verifyPassword} from '../src/password.ts';
 import {acceptProposal} from '../src/proposal-acceptance.ts';
 import {updateProgress} from '../src/request-progress.ts';
-import {issueCompletionCode} from '../src/customer-confirmation.ts';
+import {completionAction} from '../src/request-completion.ts';
+import {completionConstraints,completionRoutine} from './temporary-schema.ts';
 import {chatAccess,decryptMessage,reviewService,sendMessage} from '../src/team-workflows.ts';
 import {changePassword,consumeChallenge,deactivateAccount,requestChallenge,updateProfile} from '../src/account-management.ts';
 import {WorkflowError} from '../src/workflow-error.ts';
@@ -17,7 +18,7 @@ test('PostgreSQL temporário: chat privado, avaliação, notificações, perfil,
  const pool=createDatabasePool(),raw=await pool.connect(),oldMail=process.env.MAIL_MODE,oldEnv=process.env.NODE_ENV;process.env.MAIL_MODE='local';process.env.NODE_ENV='test';
  try{
   await raw.query('BEGIN');
-  for(const table of ['accounts','customer_profiles','provider_profiles','sessions','service_requests','proposals'])await raw.query(`CREATE TEMP TABLE ${table}(LIKE maridao.${table} INCLUDING ALL) ON COMMIT DROP`);
+  for(const table of ['accounts','customer_profiles','provider_profiles','sessions','service_requests','proposals','admin_events'])await raw.query(`CREATE TEMP TABLE ${table}(LIKE maridao.${table} INCLUDING ALL) ON COMMIT DROP`);
   await raw.query('ALTER TABLE pg_temp.proposals ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1, ADD COLUMN IF NOT EXISTS updated_at timestamptz, ADD COLUMN IF NOT EXISTS withdrawn_at timestamptz');
   const migration10=readFileSync(new URL('../migrations/010_customer_confirmation.sql',import.meta.url),'utf8');
   for(const statement of migration10.split(';')){
@@ -26,6 +27,9 @@ test('PostgreSQL temporário: chat privado, avaliação, notificações, perfil,
   }
   const migration11=readFileSync(new URL('../migrations/011_team_workflows.sql',import.meta.url),'utf8').replace(/^\\.*$/gm,'').replace(/^(BEGIN|COMMIT);$/gm,'').replace(/^(GRANT|REVOKE) .*;$/gm,'').replaceAll('maridao.','pg_temp.').replaceAll('CREATE TABLE IF NOT EXISTS','CREATE TEMP TABLE IF NOT EXISTS');
   await raw.query(migration11);
+  // 014: regras do novo status e avisos próprios da conclusão.
+  for(const sql of completionConstraints())await raw.query(sql);
+  await raw.query(completionRoutine('notify_workflow'));
   const query=(sql:string,values?:unknown[])=>raw.query(sql.replaceAll('maridao.','pg_temp.'),values);
   const db={query:async(sql:string,values?:unknown[])=>{
    if(sql==='BEGIN')return raw.query('SAVEPOINT operation');if(sql==='COMMIT')return raw.query('RELEASE SAVEPOINT operation');if(sql==='ROLLBACK'){await raw.query('ROLLBACK TO SAVEPOINT operation');return raw.query('RELEASE SAVEPOINT operation');}return query(sql,values);
@@ -47,7 +51,15 @@ test('PostgreSQL temporário: chat privado, avaliação, notificações, perfil,
   const messages=(await query('SELECT ciphertext FROM maridao.chat_messages WHERE request_id=$1',[request])).rows;assert.equal(messages.length,1);assert.ok(!messages[0].ciphertext.includes('Mensagem privada'));assert.equal(decryptMessage(request,messages[0].ciphertext),'Mensagem privada de teste');
   const notifications=(await query('SELECT account_id,title FROM maridao.notifications ORDER BY id')).rows;assert.ok(notifications.some(n=>n.account_id===customer.id&&n.title==='Nova proposta recebida'));assert.equal(notifications.filter(n=>n.title==='Nova mensagem no atendimento'&&n.account_id===provider.id).length,1);assert.ok(!notifications.some(n=>n.account_id===other.id));
   await assert.rejects(()=>deactivateAccount(db,provider,{currentPassword:secret}),WorkflowError);
-  await updateProgress(db,provider,request,{status:'Em andamento'});const challenge=await issueCompletionCode(db,customer,request,{});assert.equal(challenge.code,'0345');await updateProgress(db,provider,request,{status:'Concluída',code:challenge.code});
+  await updateProgress(db,provider,request,{status:'Em andamento'});
+  // Conclusão registrada pelo prestador: chat segue aberto, avaliação e encerramento de conta seguem bloqueados até a confirmação.
+  await completionAction(db,provider,request,'report',{});
+  await sendMessage(db,provider,request,{clientId:randomUUID(),message:'Aguardando a sua confirmação'});
+  await assert.rejects(()=>reviewService(db,customer,request,{rating:5,comment:''}),WorkflowError);
+  for(const [account,pass] of [[provider,secret],[customer,secret]] as const)await assert.rejects(()=>deactivateAccount(db,account,{currentPassword:pass}),(e:unknown)=>e instanceof WorkflowError&&e.status===409);
+  await completionAction(db,customer,request,'confirm',{});
+  const notices=(await query('SELECT account_id,title FROM maridao.notifications WHERE request_id=$1 ORDER BY id',[request])).rows;
+  assert.ok(notices.some(n=>n.account_id===customer.id&&n.title==='Conclusão registrada pelo prestador: confirme ou conteste'));assert.ok(notices.some(n=>n.account_id===provider.id&&n.title==='Conclusão confirmada pelo cliente'));
   await assert.rejects(()=>sendMessage(db,customer,request,{clientId:randomUUID(),message:'Após conclusão'}),WorkflowError);assert.equal((await chatAccess(db,customer,request)).status,'Concluída');
   await assert.rejects(()=>reviewService(db,other,request,{rating:5,comment:'Invasão'}),WorkflowError);
   await reviewService(db,customer,request,{rating:4,comment:'Serviço realizado'});await assert.rejects(()=>reviewService(db,customer,request,{rating:1,comment:'Duplicada'}),WorkflowError);assert.equal((await query('SELECT avg(rating)::numeric(2,1) AS rating FROM maridao.service_reviews WHERE provider_id=$1',[provider.id])).rows[0].rating,'4.0');

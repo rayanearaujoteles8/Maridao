@@ -21,6 +21,8 @@ export async function reviewService(db:DB,user:Profile,id:string,input:unknown){
   if(!result.rowCount)throw new WorkflowError(409,'Este atendimento já foi avaliado.');await db.query('COMMIT');return result.rows[0];
  }catch(e){await db.query('ROLLBACK');throw e;}
 }
+// O chat aceita mensagens enquanto o atendimento não foi concluído nem cancelado (inclui "Aguardando confirmação").
+export const chatOpen=(status:string)=>['Aceita','Em andamento','Aguardando confirmação'].includes(status);
 export async function chatAccess(db:DB,user:Profile,id:string,lock=false){
  requireId(id);
  const r=(await db.query(`SELECT r.id,r.status,r.customer_id,p.provider_id FROM maridao.service_requests r JOIN maridao.proposals p ON p.id=r.selected_proposal_id AND p.request_id=r.id WHERE r.id=$1 AND (r.customer_id=$2 OR p.provider_id=$2)${lock?' FOR UPDATE OF r':''}`,[id,user.id])).rows[0];
@@ -35,7 +37,7 @@ export async function sendMessage(db:DB,user:Profile,id:string,input:unknown){
   const r=await chatAccess(db,user,id,true);
   const existing=await db.query('SELECT id,created_at FROM maridao.chat_messages WHERE request_id=$1 AND sender_id=$2 AND client_id=$3',[id,user.id,data.clientId]);
   if(existing.rowCount){await db.query('COMMIT');return existing.rows[0];}
-  if(!['Aceita','Em andamento'].includes(r.status))throw new WorkflowError(409,'Esta conversa está encerrada para novas mensagens.');
+  if(!chatOpen(r.status))throw new WorkflowError(409,'Esta conversa está encerrada para novas mensagens.');
   const result=await db.query('INSERT INTO maridao.chat_messages(request_id,sender_id,client_id,ciphertext) VALUES($1,$2,$3,$4) RETURNING id,created_at',[id,user.id,data.clientId,encryptMessage(id,message)]);
   await db.query('COMMIT');return result.rows[0];
  }catch(e){await db.query('ROLLBACK');throw e;}

@@ -60,7 +60,7 @@ Efeitos, na mesma transação:
 
 Leituras: GET /requests e o detalhe do pedido trazem can_cancel e cancellation; GET /requests/history traz cancellation. O objeto cancellation informa quem cancelou (by: customer, provider, administration ou system), quando (at), por qual caminho (action: request_cancelled, request_replaced, account_closed ou support_cancelled) e o motivo (reason). O motivo só é devolvido ao cliente do pedido e ao prestador da proposta escolhida. Pedidos cancelados antes desta revisão, sem evento, aparecem só como Cancelada. A administração consulta os cancelamentos de uma conta em GET /admin/users/:id (lista cancellations).
 
-No aplicativo: a tela Cancelar Solicitação abre em folha, pede o motivo e a confirmação; para o prestador o título é Cancelar atendimento. O botão só aparece quando can_cancel é verdadeiro. O autor e o motivo do cancelamento aparecem na lista de pedidos e no histórico.
+No aplicativo: a tela Cancelar Solicitação abre em folha, pede o motivo e a confirmação; para o prestador o título é Cancelar atendimento. O botão só aparece quando can_cancel é verdadeiro. O autor e o motivo do cancelamento aparecem na lista de pedidos e no histórico. O administrador consulta data, hora, autor e motivo de cada cancelamento na seção Cancelamentos de pedidos da tela Gerenciar Usuário (GET /admin/users/:id, campo cancellations).
 
 Verificação: tests/request-cancellation.test.ts (unidade) e npm run test:cancel:db com MARIDAO_DB_TEST=1 (banco, em transação desfeita ao final).
 

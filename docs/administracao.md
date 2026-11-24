@@ -73,6 +73,8 @@ Inativar encerra as sessões, cancela os pedidos abertos do cliente e retira as 
 | Cadastrar cliente, prestador e administrador | admin/cadastrar-cliente.tsx, admin/cadastrar-prestador.tsx, admin/cadastrar-administrador.tsx |
 | Criar nova senha (senha provisória) | trocar-senha-provisoria.tsx |
 
+A tela Gerenciar Usuário termina com duas seções de registro (RNF02.4): Histórico administrativo (decisões sobre a conta) e Cancelamentos de pedidos. Esta última lista os cancelamentos devolvidos em cancellations — pedidos em que a conta é cliente, prestador escolhido ou autora do cancelamento, os 50 mais recentes — com a categoria do pedido, o status anterior, a data e a hora (fuso de Palmas), quem cancelou (papel e nome, ou "Sistema (automático)") e o motivo ("Não informado" quando o cliente cancela um pedido ainda aberto sem escrever motivo). Os textos ficam em apps/mobile-sdk57/src/lib/admin-audit.ts, com teste em npm run test:audit.
+
 O aviso de cadastro em análise ou rejeitado aparece no painel do prestador (docs/area-prestador.md).
 
 ## Limites

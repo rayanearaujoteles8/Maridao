@@ -8,7 +8,7 @@ Sem mudanças na API ou no banco. Identidade #A1FF1D, #020300, #FFFFFF e #DCFFA4
 
 ## Atualização de 18/11/2026
 
-- O prestador que se cadastra sozinho fica Em análise até um administrador aprovar. O painel mostra o aviso de cadastro em análise ou, se rejeitado, o motivo informado pela administração. Enquanto não for Aprovado, o prestador entra no aplicativo e vê os pedidos, mas não aparece na busca e não envia nem reenvia propostas.
+- O prestador que se cadastra sozinho fica Em análise até um administrador aprovar. O painel mostra o aviso de cadastro em análise ou, se rejeitado, o motivo informado pela administração. Enquanto não for Aprovado, o prestador entra no aplicativo, mas não recebe as solicitações abertas (UC05.1), não aparece na busca e não envia nem reenvia propostas. Ele continua vendo os pedidos em que já tem proposta. A aba Pedidos explica a lista vazia: "Seu cadastro está em análise." ou "Seu cadastro foi rejeitado.".
 - A decisão gera um aviso em Notificações. Prestador cadastrado por administrador já entra Aprovado.
 - O cadastro aceita somente CPF; o botão CNPJ foi retirado.
 - As abas do prestador são Início e Pedidos.

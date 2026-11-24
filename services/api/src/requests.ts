@@ -86,7 +86,7 @@ requestRoutes.get('/',async(req,res,next)=>{
   pool ??= createDatabasePool();
   await settleOverdue(pool);
   const result=await pool.query(query.text,query.values);
-  res.json({requests:result.rows.slice(0,20).map(row=>({...row,neighborhood_label:neighborhoodLabel(row.neighborhood)})),page:query.page,hasMore:result.rows.length>20,role:user.role});
+  res.json({requests:result.rows.slice(0,20).map(row=>({...row,neighborhood_label:neighborhoodLabel(row.neighborhood)})),page:query.page,hasMore:result.rows.length>20,role:user.role,...(user.role==='provider'?{approvalStatus:user.approvalStatus}:{})});
  }catch(error){next(error);}
 });
 requestRoutes.post('/:id/status',registrationLimit,async(req,res,next)=>{

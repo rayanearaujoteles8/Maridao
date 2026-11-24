@@ -26,9 +26,9 @@ Enquanto a troca estiver pendente, só respondem GET /auth/me, POST /auth/logout
 
 | Situação | Como chega a ela | Efeito |
 | --- | --- | --- |
-| Em análise | Autocadastro (POST /providers) | Entra no aplicativo e vê o aviso de cadastro em análise. Não aparece na busca e não envia nem reenvia propostas. |
+| Em análise | Autocadastro (POST /providers) | Entra no aplicativo e vê o aviso de cadastro em análise. Não recebe solicitações abertas (só os pedidos em que já tem proposta), não aparece na busca e não envia nem reenvia propostas. |
 | Aprovado | Decisão do administrador, cadastro feito por administrador ou cadastro anterior à migração 012 | Aparece na busca e pode propor. |
-| Rejeitado | Decisão do administrador, com motivo | Vê o motivo no painel. Não aparece na busca e não propõe. |
+| Rejeitado | Decisão do administrador, com motivo | Vê o motivo no painel. Não recebe solicitações abertas, não aparece na busca e não propõe. |
 
 A decisão avisa o prestador em Notificações: "Cadastro aprovado: seu perfil aparece nas buscas e você já pode enviar propostas" ou "Cadastro rejeitado: veja o motivo no seu perfil". Esse aviso não pertence a um pedido. Não há rota para reverter uma decisão. O cadastro de prestador aceita somente CPF, no autocadastro e no cadastro feito por administrador.
 

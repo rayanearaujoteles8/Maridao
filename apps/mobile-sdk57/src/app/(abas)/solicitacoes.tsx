@@ -19,11 +19,16 @@ import { themed } from '@/theme';
 
 type RequestItem=ServiceProgress & Cancellable & CustomerRemoved & {id:string;category:string;description:string;neighborhood:string;neighborhood_label?:string;city:string;state:string;preferred_date:string|null;preferred_period:string|null;status:string;created_at:string};
 const formatDay=(iso:string)=>new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Araguaina'}).format(new Date(iso));
-type Result={requests:RequestItem[];page:number;hasMore:boolean;role:'customer'|'provider'};
+type Result={requests:RequestItem[];page:number;hasMore:boolean;role:'customer'|'provider';approvalStatus?:string};
+// UC05.1: prestador sem cadastro aprovado não recebe solicitações abertas; a lista vazia diz por quê.
+const emptyNote=(role:Result['role']|null,approval:string|null)=>role!=='provider'?{title:'Seu próximo serviço começa aqui.',text:'Você ainda não publicou nenhuma solicitação.'}
+ :approval==='Em análise'?{title:'Seu cadastro está em análise.',text:'As solicitações abertas aparecem aqui depois que um administrador aprovar o seu cadastro. Você será avisado em Notificações.'}
+ :approval==='Rejeitado'?{title:'Seu cadastro foi rejeitado.',text:'Por isso as solicitações abertas não aparecem para você. O motivo informado pela administração está na tela Início.'}
+ :{title:'As oportunidades aparecem por aqui.',text:'Ainda não há pedidos compatíveis ou propostas enviadas. Consulte novamente em outro momento.'};
 export default function RequestsScreen(){
  const s=useS();const styles=useStyles();const flow=useFlow();
  const {session,setSession}=useSession();
- const [items,setItems]=useState<RequestItem[]>([]),[role,setRole]=useState<Result['role']|null>(null);
+ const [items,setItems]=useState<RequestItem[]>([]),[role,setRole]=useState<Result['role']|null>(null),[approval,setApproval]=useState<string|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[page,setPage]=useState(1),[more,setMore]=useState(false);
  const [expanded,setExpanded]=useState<string|null>(null);
  const generation=useRef(0),pending=useRef(false);
@@ -38,7 +43,7 @@ export default function RequestsScreen(){
    const result:Result=await api(`/requests?page=${nextPage}`,{headers:{Authorization:`Bearer ${session.token}`}});
    if(run!==generation.current)return;
    setItems(old=>nextPage===1?result.requests:[...old,...result.requests.filter(item=>!old.some(previous=>previous.id===item.id))]);
-   setRole(result.role);setPage(result.page);setMore(result.hasMore);pages.current=result.page;shownFor.current=session.token;
+   setRole(result.role);setApproval(result.approvalStatus??null);setPage(result.page);setMore(result.hasMore);pages.current=result.page;shownFor.current=session.token;
   }catch(failure){
    if(run!==generation.current)return;
    if(failure instanceof ApiError&&failure.status===401)setSession(null);
@@ -58,7 +63,7 @@ export default function RequestsScreen(){
     const seen=all;all=[...seen,...result.requests.filter(item=>!seen.some(previous=>previous.id===item.id))];last=result;
     if(!result.hasMore)break;
    }
-   if(last){setItems(all);setRole(last.role);setPage(last.page);setMore(last.hasMore);pages.current=last.page;setError('');}
+   if(last){setItems(all);setRole(last.role);setApproval(last.approvalStatus??null);setPage(last.page);setMore(last.hasMore);pages.current=last.page;setError('');}
   }catch(failure){
    if(run!==generation.current)return;
    if(failure instanceof ApiError&&failure.status===401)setSession(null);
@@ -68,19 +73,21 @@ export default function RequestsScreen(){
  useFocusEffect(useCallback(()=>{
   generation.current++;pending.current=false;
   if(session&&shownFor.current===session.token)void resync();
-  else{setItems([]);setRole(null);setExpanded(null);setMore(false);setPage(1);pages.current=1;void load();}
+  else{setItems([]);setRole(null);setApproval(null);setExpanded(null);setMore(false);setPage(1);pages.current=1;void load();}
   return()=>{generation.current++;pending.current=false;};
  },[load,resync,session]));
  const pull=usePullRefresh(useCallback(()=>load(1,true),[load]));
+ const empty=emptyNote(role,approval);
  if(!session)return <Redirect href="/entrar"/>;
  // Primeira carga: blocos-fantasma no lugar da lista; os cartões entram em sequência (ListEntrance) quando ela chega.
  return <SafeAreaView edges={TAB_EDGES} style={styles.safe}><ListEntrance ready={role!==null}><FlatList {...pull.props} ref={list} data={items} keyExtractor={item=>item.id} contentContainerStyle={flow.page}
   ListHeaderComponent={<View style={s.section}>
    <WorkflowHeading eyebrow={role==='provider'?'OPORTUNIDADES E PROPOSTAS':'SEUS SERVIÇOS, EM UM SÓ LUGAR'} title={role==='provider'?'Vamos ao próximo serviço?':role==='customer'?'Meus pedidos':'Solicitações'} description={role==='provider'?'Consulte pedidos da sua região e acompanhe as propostas que enviou.':'Veja suas solicitações, compare propostas e acompanhe cada atendimento.'}/>
    <View style={flow.row}><Text accessibilityRole="header" style={flow.sectionTitle}>Solicitações</Text></View>
+   {role==='provider'&&items.length>0&&(approval==='Em análise'||approval==='Rejeitado')?<Text style={flow.note}>{approval==='Em análise'?'Cadastro em análise: aparecem só os pedidos em que você já tem proposta.':'Cadastro rejeitado: aparecem só os pedidos em que você já tem proposta.'}</Text>:null}
    {error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}
   </View>}
-  ListEmptyComponent={busy||(role===null&&!error)?<Skeleton shape="cards"/>:!error?<View style={flow.empty}><Text style={flow.cardTitle}>{role==='provider'?'As oportunidades aparecem por aqui.':'Seu próximo serviço começa aqui.'}</Text><Text style={flow.description}>{role==='provider'?'Ainda não há pedidos compatíveis ou propostas enviadas. Consulte novamente em outro momento.':'Você ainda não publicou nenhuma solicitação.'}</Text>{role==='customer'?<PressableScale accessibilityRole="button" style={s.button} onPress={()=>router.push('/nova-solicitacao')}><Text style={s.buttonText}>Pedir um serviço ↗</Text></PressableScale>:null}</View>:undefined}
+  ListEmptyComponent={busy||(role===null&&!error)?<Skeleton shape="cards"/>:!error?<View style={flow.empty}><Text style={flow.cardTitle}>{empty.title}</Text><Text style={flow.description}>{empty.text}</Text>{role==='customer'?<PressableScale accessibilityRole="button" style={s.button} onPress={()=>router.push('/nova-solicitacao')}><Text style={s.buttonText}>Pedir um serviço ↗</Text></PressableScale>:null}</View>:undefined}
   renderItem={({item,index})=><StaggerItem index={index}><View style={flow.card}>
    <View style={flow.row}><StatusBadge status={item.status}/><Text style={flow.note}>{new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeZone:'America/Araguaina'}).format(new Date(item.created_at))}</Text></View>
    {item.can_confirm_completion?<AttentionSeal label={item.completion_deadline_at?`Confirme a conclusão até ${formatDay(item.completion_deadline_at)}`:'Confirme a conclusão'}/>:null}

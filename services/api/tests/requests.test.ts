@@ -5,6 +5,7 @@ import {createRequest,insertRequestQuery,requestCustomer} from '../src/requests.
 import type {AuthStore} from '../src/auth.ts';
 import {listRequestsQuery,requestListUser} from '../src/request-listing.ts';
 import type {Profile} from '../src/auth.ts';
+import {proposalAccessQuery} from '../src/proposals.ts';
 const sample={category:'Montagem e desmontagem de móveis',description:'Montar uma estante',neighborhood:'JARDIM AURENY I'};
 
 test('listagem limita cliente à própria conta e não aceita identidade ou perfil enviados na URL',()=>{
@@ -27,6 +28,11 @@ test('prestador vê pedidos abertos compatíveis ou pedidos com a própria propo
  assert.match(query.text,/r.neighborhood=ANY\(p.neighborhoods\)/);
  assert.match(query.text,/area.value=ANY\(p.neighborhoods\)/);
  assert.match(query.text,/own.request_id=r.id AND own.provider_id=p.account_id/);
+ // UC05.1: a parte "pedidos abertos compatíveis" exige cadastro aprovado; a parte "já tenho proposta" não.
+ assert.match(query.text,/WHERE \(p\.approval_status='Aprovado' AND r\.status='Aberta'[\s\S]*\) OR EXISTS \(SELECT 1 FROM maridao\.proposals own/);
+ const detail=proposalAccessQuery({id:'prestador-da-sessao',role:'provider'} as Profile,'11111111-1111-4111-8111-111111111111').text;
+ assert.match(detail,/r\.id=\$2 AND \(\(p\.approval_status='Aprovado' AND r\.status='Aberta'[\s\S]*\) OR EXISTS \(SELECT 1 FROM maridao\.proposals own/);
+ assert.ok(!proposalAccessQuery({id:'cliente',role:'customer'} as Profile,'11111111-1111-4111-8111-111111111111').text.includes('approval_status'));
  const membership=JSON.parse(query.values[2] as string);
  assert.deepEqual(membership['ARNE 63'],['CIDADE:PALMAS','REGIAO:CENTRO']);
  assert.deepEqual(membership['JARDIM AURENY I'],['CIDADE:PALMAS','REGIAO:AURENYS']);

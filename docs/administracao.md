@@ -26,9 +26,9 @@ Enquanto a troca estiver pendente, só respondem GET /auth/me, POST /auth/logout
 
 | Situação | Como chega a ela | Efeito |
 | --- | --- | --- |
-| Em análise | Autocadastro (POST /providers) | Entra no aplicativo e vê o aviso de cadastro em análise. Não aparece na busca e não envia nem reenvia propostas. |
+| Em análise | Autocadastro (POST /providers) | Entra no aplicativo e vê o aviso de cadastro em análise. Não recebe solicitações abertas (só os pedidos em que já tem proposta), não aparece na busca e não envia nem reenvia propostas. |
 | Aprovado | Decisão do administrador, cadastro feito por administrador ou cadastro anterior à migração 012 | Aparece na busca e pode propor. |
-| Rejeitado | Decisão do administrador, com motivo | Vê o motivo no painel. Não aparece na busca e não propõe. |
+| Rejeitado | Decisão do administrador, com motivo | Vê o motivo no painel. Não recebe solicitações abertas, não aparece na busca e não propõe. |
 
 A decisão avisa o prestador em Notificações: "Cadastro aprovado: seu perfil aparece nas buscas e você já pode enviar propostas" ou "Cadastro rejeitado: veja o motivo no seu perfil". Esse aviso não pertence a um pedido. Não há rota para reverter uma decisão. O cadastro de prestador aceita somente CPF, no autocadastro e no cadastro feito por administrador.
 
@@ -72,6 +72,8 @@ Inativar encerra as sessões, cancela os pedidos abertos do cliente e retira as 
 | Cadastros em Análise e detalhe | admin/cadastros-em-analise.tsx, admin/cadastro-em-analise.tsx |
 | Cadastrar cliente, prestador e administrador | admin/cadastrar-cliente.tsx, admin/cadastrar-prestador.tsx, admin/cadastrar-administrador.tsx |
 | Criar nova senha (senha provisória) | trocar-senha-provisoria.tsx |
+
+A tela Gerenciar Usuário termina com duas seções de registro (RNF02.4): Histórico administrativo (decisões sobre a conta) e Cancelamentos de pedidos. Esta última lista os cancelamentos devolvidos em cancellations — pedidos em que a conta é cliente, prestador escolhido ou autora do cancelamento, os 50 mais recentes — com a categoria do pedido, o status anterior, a data e a hora (fuso de Palmas), quem cancelou (papel e nome, ou "Sistema (automático)") e o motivo ("Não informado" quando o cliente cancela um pedido ainda aberto sem escrever motivo). Os textos ficam em apps/mobile-sdk57/src/lib/admin-audit.ts, com teste em npm run test:audit.
 
 O aviso de cadastro em análise ou rejeitado aparece no painel do prestador (docs/area-prestador.md).
 

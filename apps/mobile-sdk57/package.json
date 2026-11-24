@@ -44,7 +44,9 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test:calendar": "node --test tests/calendar.test.mjs",
-    "test:selection": "node --test tests/selection.test.mjs"
+    "test:selection": "node --test tests/selection.test.mjs",
+    "test:audit": "node --test tests/admin-audit.test.mjs",
+    "test:live": "node --test tests/live-updates.test.mjs"
   },
   "private": true
 }

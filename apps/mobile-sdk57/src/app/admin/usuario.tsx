@@ -9,12 +9,13 @@ import {FieldError} from '@/components/field-motion';
 import {useCatalog} from '@/hooks/use-catalog';
 import {useStyles} from '@/components/access-screen';
 import {validPhone} from '@/lib/validation';
+import {cancellationAuthor,cancellationPath,cancellationReason,cancellationWhen,type CancellationRecord} from '@/lib/admin-audit';
 
 type Account={id:string;type:'customer'|'provider';name:string;email:string|null;phone:string|null;cpf:string|null;neighborhood?:string|null;city:string;state:string;accountStatus:'Ativa'|'Inativa'|'Excluída';mustChangePassword:boolean;emailVerified:boolean;createdAt:string;disabledAt:string|null;deletedAt:string|null;categories?:string[];specialties?:string[];neighborhoods?:string[];coverageLabels?:string[];availability?:string;approvalStatus?:string;approvalReason?:string|null;approvalDecidedAt?:string|null};
 type Event={id:string;action:string;reason:string;createdAt:string;adminName:string|null;by?:'administration'|'customer'|'provider'};
 // RNF02.4: quem fez o registro. `by` diz se foi a administração (com o nome do administrador) ou o próprio titular da conta.
 const author=(event:Event)=>event.by==='customer'?'Feito pelo próprio cliente':event.by==='provider'?'Feito pelo próprio prestador':event.adminName?`Feito pela administração · ${event.adminName}`:'Feito pela administração · administrador não identificado';
-type Data={user:Account;events:Event[]};
+type Data={user:Account;events:Event[];cancellations?:CancellationRecord[]};
 const actions:Record<string,string>={account_created:'Conta cadastrada',account_edited:'Cadastro editado',account_deactivated:'Conta inativada',account_deleted:'Conta excluída',provider_approved:'Cadastro aprovado',provider_rejected:'Cadastro rejeitado'};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // UC14.2: dados da conta, edição (PATCH), inativação e — só para cliente — exclusão, sempre com motivo.
@@ -31,7 +32,7 @@ export default function ManageUser(){
 }
 function AccountPanel({data,resource}:{data:Data;resource:ReturnType<typeof usePrivateResource<Data>>}){
  const styles=useStyles();const ui=useUi();const a=useA();
- const {user,events}=data,catalog=useCatalog();
+ const {user,events}=data,cancellations=data.cancellations??[],catalog=useCatalog();
  const provider=user.type==='provider',active=user.accountStatus==='Ativa',deleted=user.accountStatus==='Excluída',busy=resource.busy;
  const [form,setForm]=useState({name:user.name,phone:formatPhone(user.phone),neighborhood:user.neighborhood??'',categories:user.categories??[],specialties:user.specialties??[],neighborhoods:user.neighborhoods??[],availability:user.availability??''});
  const [reason,setReason]=useState(''),[local,setLocal]=useState<Record<string,string>>({});
@@ -101,6 +102,17 @@ function AccountPanel({data,resource}:{data:Data;resource:ReturnType<typeof useP
 
   <Section title="Histórico administrativo">
    {!events.length?<Text style={styles.note}>Nenhum registro administrativo nesta conta.</Text>:events.map(event=><View key={event.id} style={ui.card}><Text style={ui.label}>{actions[event.action]??event.action}</Text><Text style={styles.note}>{formatDate(event.createdAt)}</Text><Text style={styles.note}>{author(event)}</Text>{event.reason?<Text style={a.value}>Motivo: {event.reason}</Text>:null}</View>)}
+  </Section>
+
+  {/* RNF02.4: cancelamentos dos pedidos em que a conta é cliente, prestador escolhido ou autora (os 50 mais recentes). */}
+  <Section title="Cancelamentos de pedidos">
+   {!cancellations.length?<Text style={styles.note}>Nenhum cancelamento ligado a esta conta.</Text>:cancellations.map(item=><View key={item.id} style={ui.card}>
+    <Text style={ui.label}>{item.category}</Text>
+    <Text style={styles.note}>{cancellationPath(item.action)}{item.previousStatus?` · estava "${item.previousStatus}"`:''}</Text>
+    <InfoRow label="Data e hora" value={cancellationWhen(item.createdAt)}/>
+    <InfoRow label="Cancelado por" value={cancellationAuthor(item)}/>
+    <InfoRow label="Motivo" value={cancellationReason(item.reason)}/>
+   </View>)}
   </Section>
  </View>;
 }

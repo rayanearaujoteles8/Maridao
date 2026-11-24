@@ -109,7 +109,7 @@ Por solicitação da usuária, bairros/quadras e serviços passam de texto livre
 
 ## Consulta de solicitações
 
-RF05.1 e RF09.1: GET /requests exige sessão e deriva o perfil e a conta do servidor. Para clientes, retorna apenas solicitações da própria conta. Para prestadores, retorna pedidos Abertos de categoria cadastrada e localidade compatível com as áreas de atendimento, incluindo as regiões e Toda Palmas do catálogo. Valores antigos fora do catálogo só correspondem por categoria/localidade exatas; não são convertidos automaticamente.
+RF05.1 e RF09.1: GET /requests exige sessão e deriva o perfil e a conta do servidor. Para clientes, retorna apenas solicitações da própria conta. Para prestadores com cadastro Aprovado (UC05.1), retorna pedidos Abertos de categoria cadastrada e localidade compatível com as áreas de atendimento, incluindo as regiões e Toda Palmas do catálogo. Valores antigos fora do catálogo só correspondem por categoria/localidade exatas; não são convertidos automaticamente. O prestador Em análise ou Rejeitado recebe apenas os pedidos em que já tem proposta; a resposta traz approvalStatus para a tela explicar a lista vazia. A mesma regra vale no detalhe (GET /requests/:id/proposals).
 
 Consulta paginada de 20 itens, com ordenação por criação e identificador, campos públicos da solicitação e sem dados cadastrais/contato do cliente. Não aceita customerId ou role pela URL. Tela Solicitações acessível na Minha conta, com rótulo conforme o perfil, atualização manual, carregamento de mais resultados e detalhes da descrição/data/período. Consulta renovada ao retornar à tela; sessão inválida encerra acesso. Envio de propostas, aceite, chat e atualização de status continuam para as próximas etapas.
 

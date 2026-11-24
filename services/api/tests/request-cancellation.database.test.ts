@@ -47,6 +47,14 @@ test('PostgreSQL: cancelamento por cliente e prestador, propostas, evento, aviso
 
   // --- Aberta: só o cliente dono cancela; o motivo é opcional.
   const open=await order();
+  // UC05.1: prestador compatível só consulta a solicitação aberta com o cadastro aprovado; quem já tem proposta nela continua vendo.
+  const detailed=async(user:Profile,request:string)=>{const q=proposalAccessQuery(user,request);return (await raw.query(q.text,q.values)).rows[0];};
+  const setApproval=(id:string,status:string)=>raw.query('UPDATE maridao.provider_profiles SET approval_status=$2 WHERE account_id=$1',[id,status]);
+  assert.ok(await listed(c,open.request));assert.ok(await detailed(c,open.request));
+  // "Rejeitado" passa pela mesma condição (approval_status='Aprovado'); a tabela exige motivo e administrador para gravá-lo, então aqui basta "Em análise".
+  await setApproval(cId,'Em análise');assert.equal(await listed(c,open.request),undefined);assert.equal(await detailed(c,open.request),undefined);
+  await setApproval(aId,'Em análise');assert.ok(await listed(a,open.request));assert.ok(await detailed(a,open.request));
+  await setApproval(cId,'Aprovado');await setApproval(aId,'Aprovado');assert.ok(await listed(c,open.request));
   assert.equal((await listed(customer,open.request)).can_cancel,true);assert.equal((await listed(a,open.request)).can_cancel,false);assert.equal((await listed(customer,open.request)).cancellation,null);
   await assert.rejects(()=>cancelRequest(db,a,open.request,{reason:'Imprevisto'}),failure(403,'CANCEL_NOT_ALLOWED'));
   await assert.rejects(()=>cancelRequest(db,c,open.request,{reason:'Imprevisto'}),failure(404));

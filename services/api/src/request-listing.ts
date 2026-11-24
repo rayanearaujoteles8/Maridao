@@ -16,6 +16,8 @@ export const providerEligibility=(membershipParameter:string)=>`r.status='Aberta
      AND (r.neighborhood=ANY(p.neighborhoods) OR EXISTS (
       SELECT 1 FROM jsonb_array_elements_text(COALESCE(${membershipParameter}::jsonb -> lower(btrim(r.neighborhood)),'[]'::jsonb)) AS area(value)
       WHERE area.value=ANY(p.neighborhoods) OR area.value=ANY(SELECT ${coverageSql('location')} FROM unnest(p.neighborhoods) AS location)))`;
+// UC05.1: só prestador com cadastro aprovado consulta solicitações abertas. Quem está "Em análise" ou "Rejeitado" continua vendo apenas os pedidos em que já tem proposta.
+export const approvedEligibility=(membershipParameter:string)=>`p.approval_status='Aprovado' AND ${providerEligibility(membershipParameter)}`;
 export async function requestListUser(header: string|undefined, store: AuthStore=databaseAuthStore) {
  const token=bearerToken(header);
  return token?store.findSession(tokenHash(token)):undefined;
@@ -29,6 +31,6 @@ export function listRequestsQuery(user: Profile, query: Record<string,unknown>) 
  const scope=user.role==='customer'
   ? `FROM maridao.service_requests r WHERE r.customer_id=$1`
   : `FROM maridao.service_requests r JOIN maridao.provider_profiles p ON p.account_id=$1
-     WHERE (${providerEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=p.account_id)`;
+     WHERE (${approvedEligibility('$3')}) OR EXISTS (SELECT 1 FROM maridao.proposals own WHERE own.request_id=r.id AND own.provider_id=p.account_id)`;
  return {text:`SELECT ${fields} ${scope} ORDER BY r.created_at DESC,r.id DESC LIMIT 21 OFFSET $2`, values:user.role==='customer'?[user.id,(Number(page)-1)*20]:[user.id,(Number(page)-1)*20,regionalMembership],page:Number(page)};
 }

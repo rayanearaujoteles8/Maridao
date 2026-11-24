@@ -9,8 +9,9 @@ import {useSession} from '@/components/session';
 import {REMOVED_NAME,type Counterpart} from '@/components/removed-user';
 import {api} from '@/lib/api';
 import { useTheme } from '@/theme';
-type Message={id:string;mine:boolean;message:string;created_at:string};
-type Data={messages:Message[];hasMore:boolean;canSend:boolean;counterpart?:Counterpart};
+import {usePolling} from '@/hooks/use-polling';
+import {mergeChat,type ChatData,type ChatMessage as Message} from '@/lib/live-updates';
+type Data=ChatData<Counterpart|undefined>;
 // Nome de quem escreveu as mensagens que não são minhas: "Usuário removido" quando o cliente excluiu a conta; o nome do
 // prestador quando quem lê é o cliente; sem nome (a API não entrega o do cliente ao prestador), o rótulo de sempre.
 const otherName=(counterpart?:Counterpart)=>counterpart?.removed?counterpart.name||REMOVED_NAME:counterpart?.name||'Outra parte do atendimento';
@@ -42,6 +43,9 @@ function Bubble({m,fresh,other}:{m:Message;fresh:boolean;other:string}){
 }
 export default function Chat(){const styles=useStyles();const {colors}=useTheme();const ui=useUi();const reduced=useReducedMotion();const {id,status}=useLocalSearchParams<{id:string;status?:string}>(),path=`/requests/${encodeURIComponent(id??'')}/messages`,r=usePrivateResource<Data>(path),{session}=useSession();const [message,setMessage]=useState(''),[draftId,setDraftId]=useState<string|null>(null);
  const scroll=useRef<ComponentRef<typeof ScrollView>>(null);
+ // RNF01.1: mensagem da outra parte chega em até 10 s com a conversa aberta. A consulta não liga o "Aguarde…", não trava o
+ // campo e só acrescenta o que é novo, então o texto que está sendo digitado fica como está.
+ usePolling(()=>r.poll(mergeChat));
  const messages=r.data?.messages??null;
  // Estado derivado na renderização: os cartões da mesma atualização já nascem sabendo se são chegada.
  const [known,setKnown]=useState<Message[]|null>(null),[fresh,setFresh]=useState(NONE);

@@ -42,8 +42,19 @@ export function usePrivateResource<T>(path:string|null){
    if(current()){setError('');setData(result);}
   }catch(e){if(current()){if(e instanceof ApiError&&e.status===401)setSession(null);else{if(e instanceof ApiError)setCode(e.code??'');setError(e instanceof Error?e.message:'Não foi possível atualizar.');}}}
  },[path,session,setSession]);
+ // Consulta periódica (usePolling): como o refresh, mas junta a resposta ao que já está na tela (`merge`) e não toca no
+ // erro nem em `busy`. Falha de rede é ignorada (a próxima consulta tenta de novo); sessão expirada encerra o acesso.
+ const poll=useCallback(async(merge:(old:T,next:T)=>T)=>{
+  if(path===null||!session||pending.current)return;
+  const run=generation.current,mine=++refreshRun.current;
+  const current=()=>run===generation.current&&mine===refreshRun.current;
+  try{
+   const result=await api(path,{headers:{Authorization:`Bearer ${session.token}`}});
+   if(current())setData(old=>old?merge(old,result):old);
+  }catch(e){if(current()&&e instanceof ApiError&&e.status===401)setSession(null);}
+ },[path,session,setSession]);
  useFocusEffect(useCallback(()=>{generation.current++;pending.current=false;setData(null);void reload();return()=>{generation.current++;pending.current=false;};},[reload]));
- return {data,setData,busy,error,message,setMessage,fields,setFields,code,perform,reload,refresh};
+ return {data,setData,busy,error,message,setMessage,fields,setFields,code,perform,reload,refresh,poll};
 }
 export function useLogout(){
  const {session,setSession}=useSession();

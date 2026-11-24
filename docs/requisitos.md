@@ -1,3 +1,7 @@
+## Alinhamento com a v0.6 em 24 de novembro de 2026
+
+A usuária confirmou que Aguardando confirmação continua protegida: não permite cancelamento direto nem exclusão/inativação da conta. Para voltar a cancelar, o cliente contesta a conclusão e a solicitação retorna a Em andamento. RN10 passa a incluir expressamente Aguardando confirmação. A decisão administrativa exige motivo tanto para aprovação quanto para rejeição. Detalhes de implementação e pendências em conformidade-v06.md. Os registros cronológicos abaixo preservam o histórico e não substituem esse alinhamento.
+
 # Estado vigente da implementação
 
 A situação atual está na seção Revisão de 18/11/2026, ao final deste arquivo, e em [Próximas etapas](proximas-etapas.md). A [Entrega da equipe de 17/11/2026](entrega-equipe-2026-11-17.md) é o registro da revisão anterior. As seções abaixo preservam o histórico das etapas de desenvolvimento; marcações antigas de pendência não substituem a situação vigente.

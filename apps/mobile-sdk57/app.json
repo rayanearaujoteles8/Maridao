@@ -23,7 +23,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon-maridao.png"
     },
     "plugins": [
@@ -38,6 +38,14 @@
             "backgroundColor": "#020300",
             "image": "./assets/images/splash-symbol.png"
           }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Maridão usa a foto escolhida por você para seu perfil.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ]
     ],

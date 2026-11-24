@@ -49,7 +49,7 @@ Todas exigem sessão de administrador sem senha provisória pendente. Não usam 
 | POST /admin/providers | Cadastra prestador com senha provisória; já entra Aprovado e não gera aviso. |
 | GET /admin/providers/pending | Cadastros Em análise, do mais antigo para o mais recente. |
 | GET /admin/providers/pending/:id | Detalhe do cadastro em análise, com o CPF completo. |
-| POST /admin/providers/:id/approve | Aprova. |
+| POST /admin/providers/:id/approve | Aprova, com motivo obrigatório. |
 | POST /admin/providers/:id/reject | Rejeita, com motivo obrigatório. |
 | POST /admin/admins | Cadastra administrador com senha provisória. |
 
@@ -59,7 +59,7 @@ Inativar encerra as sessões, cancela os pedidos abertos do cliente e retira as 
 
 - O CPF aparece mascarado nas listas e no detalhe da conta. O CPF completo só é devolvido no detalhe do cadastro de prestador enquanto ele está Em análise.
 - Conta excluída aparece com o nome Usuário removido e sem e-mail, telefone, CPF e bairro.
-- Toda criação, edição, inativação, exclusão, aprovação e rejeição grava em maridao.admin_events a data, o autor, a conta alvo, a ação e o motivo. Motivo é obrigatório em inativação, exclusão e rejeição. A API só lê e insere nessa tabela.
+- Toda criação, edição, inativação, exclusão, aprovação e rejeição grava em maridao.admin_events a data, o autor, a conta alvo, a ação e o motivo. Motivo é obrigatório em inativação, exclusão, aprovação e rejeição. A API só lê e insere nessa tabela.
 - Desde a migração 016 o registro diz quem agiu: a administração, o próprio cliente (exclusão da própria conta) ou o próprio prestador (inativação da própria conta).
 
 ## Telas

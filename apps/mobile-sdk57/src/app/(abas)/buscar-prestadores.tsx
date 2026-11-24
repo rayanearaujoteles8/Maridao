@@ -1,3 +1,4 @@
+import {ProfileAvatar} from '@/components/profile-avatar';
 import {useCallback,useRef,useState} from 'react';
 import { PressableScale } from '@/components/pressable-scale';
 import {Link,Redirect,useFocusEffect,useScrollToTop} from 'expo-router';
@@ -93,7 +94,7 @@ export default function SearchScreen(){
    </View>}
    ListEmptyComponent={busy?<Skeleton shape="cards"/>:!error?<View style={flow.empty}><Text style={flow.cardTitle}>Nenhum profissional encontrado.</Text><Text style={flow.description}>Tente outra categoria ou localidade. Novos cadastros aparecerão por aqui.</Text></View>:undefined}
    renderItem={({item:provider,index})=><StaggerItem index={index}><View style={flow.card}>
-    <View style={s.identity}><View style={s.avatar} accessible={false}><Text style={s.initial}>{provider.name.trim().slice(0,1).toLocaleUpperCase('pt-BR')}</Text></View><View style={s.nameBlock}><Text accessibilityRole="header" style={flow.cardTitle}>{provider.name}</Text><Text style={flow.field}>{provider.city} – {provider.state}</Text></View></View>
+    <View style={s.identity}><ProfileAvatar name={provider.name} id={provider.id} size={48}/><View style={s.nameBlock}><Text accessibilityRole="header" style={flow.cardTitle}>{provider.name}</Text><Text style={flow.field}>{provider.city} – {provider.state}</Text></View></View>
     <View style={s.tags}>{provider.categories.map(category=><Text key={category} style={s.tag}>{category}</Text>)}</View>
     <Text style={flow.description}>{provider.specialties.slice(0,3).join(' · ')}{provider.specialties.length>3?'…':''}</Text>
     <Text style={s.label}>Onde atende</Text><Text numberOfLines={expanded===provider.id?undefined:2} style={flow.field}>{(provider.coverageLabels??provider.neighborhoods).join(', ')}</Text>

@@ -6,6 +6,7 @@ import { SHEET_ROUTES } from '@/components/toast-host';
 import { ThemeProvider, useTheme } from '@/theme';
 import * as SystemUI from 'expo-system-ui';
 import { SessionProvider, useSession } from '@/components/session';
+import { NotificationObserver } from '@/components/notification-observer';
 import { Stack, router, usePathname, type Href, type NativeStackNavigationOptions } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
@@ -72,5 +73,5 @@ function Shell() {
 }
 // Ordem: tema (com a transição por cima de tudo) › avisos em gota › sessão › telas.
 export default function RootLayout() {
-  return <ThemeProvider><ToastProvider><SessionProvider><Shell /></SessionProvider></ToastProvider></ThemeProvider>;
+  return <ThemeProvider><ToastProvider><SessionProvider><NotificationObserver><Shell /></NotificationObserver></SessionProvider></ToastProvider></ThemeProvider>;
 }

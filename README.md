@@ -23,7 +23,7 @@ Instale Node.js 24 e PostgreSQL. Na pasta de cada aplicação, execute npm ci.
 1. Crie o banco maridao e o usuário limitado maridao_api. Defina a senha interativamente pelo SQL Shell.
 2. Aplique, como postgres e na ordem numérica, os arquivos services/api/migrations/001_customer_accounts.sql a 008_replace_open_requests.sql. São scripts de primeira instalação: não repetir em um banco já preparado.
 3. Copie services/api/.env.example para .env e preencha as credenciais e as chaves localmente (DOCUMENT_ENCRYPTION_KEY, DOCUMENT_INDEX_KEY e CHAT_ENCRYPTION_KEY, cada uma com 64 caracteres hexadecimais; MAIL_MODE=local). Nunca envie esse arquivo ao GitHub.
-4. Na pasta services/api, aplique as migrações 009 a 016 com npm run db:activate. O comando abre o psql como postgres, pede a senha no terminal e executa migrations/activate_team.sql, que inclui os arquivos 009 a 016 na ordem. Esses arquivos podem ser reaplicados. Sem o comando: psql -U postgres -d maridao -f migrations/activate_team.sql.
+4. Na pasta services/api, aplique as migrações 009 a 017 com npm run db:activate. O comando abre o psql como postgres, pede a senha no terminal e executa migrations/activate_team.sql, que inclui os arquivos 009 a 017 na ordem. Esses arquivos podem ser reaplicados. Sem o comando: psql -U postgres -d maridao -f migrations/activate_team.sql.
 5. Confira com npm run db:check e npm run db:workflows. O segundo aponta migração ausente, chave do chat e se já existe administrador.
 6. Crie o primeiro administrador com npm run admin:create (ver abaixo).
 7. Inicie a API com npm run dev.
@@ -46,8 +46,8 @@ O comando pergunta nome, e-mail e senha provisória (digitada duas vezes, sem ap
 | --- | --- |
 | npm run dev / npm start | Inicia a API (com e sem recarga automática). |
 | npm run db:check | Confere a conexão com o PostgreSQL. |
-| npm run db:activate | Aplica as migrações 009 a 016 como postgres. |
-| npm run db:workflows | Confere se as migrações 009 a 016 estão aplicadas, a chave do chat, o modo de e-mail e se há administrador. |
+| npm run db:activate | Aplica as migrações 009 a 017 como postgres. |
+| npm run db:workflows | Confere se as migrações 009 a 017 estão aplicadas, a chave do chat, o modo de e-mail e se há administrador. |
 | npm run admin:create | Cadastra o primeiro administrador, com senha provisória. |
 | npm run requests:auto-confirm | Passada manual da confirmação automática de conclusões sem resposta há 7 dias. |
 | npm run proposals:expire | Passada manual que marca como Expirada a proposta pendente com validade vencida. |

@@ -11,7 +11,7 @@ export const shortDate = (iso: string) => iso.split('-').reverse().join('/');
 export const dateTime = (iso: string) => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Araguaina' }).format(new Date(iso));
 export const money = (amount: string) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(amount));
 
-// Link de texto (alvo de 44 pt), sem preenchimento, para não competir com Aceitar/Reenviar.
+// Botão secundário para o histórico, mantendo Aceitar/Reenviar como ação principal.
 export function VersionsLink({ requestId, proposalId, count, from, provider, disabled = false }: { requestId: string; proposalId: string; count?: number | null; from?: VersionsFrom; provider?: string; disabled?: boolean }) {
   const s = useS();
   const label = count && count > 1 ? `Ver versões (${count})` : 'Ver versões';
@@ -30,7 +30,7 @@ export function VersionsLink({ requestId, proposalId, count, from, provider, dis
 }
 
 const useS = themed(colors => StyleSheet.create({
-  link: { minHeight: 44, alignSelf: 'flex-start', justifyContent: 'center', paddingVertical: 10, paddingRight: 12 },
-  linkText: { fontSize: 14, fontWeight: '600', color: colors.link, textDecorationLine: 'underline' },
+  link: { minHeight: 48, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, borderColor: colors.borderStrong, backgroundColor: colors.surface },
+  linkText: { fontSize: 14, fontWeight: '600', color: colors.link, textAlign: 'center' },
   pressed: { opacity: 0.5 },
 }));

@@ -125,8 +125,10 @@ test('cadastro de administrador e motivos são validados antes de qualquer grava
  assert.equal(reasonText('  Dados falsos  '),'Dados falsos');for(const value of [undefined,'','   ','x'.repeat(501),5])assert.throws(()=>reasonText(value),failure(400));
  const untouched=scripted([]);
  await assert.rejects(()=>decideProvider(untouched.client,admin,id,{},false),failure(400));
+ await assert.rejects(()=>decideProvider(untouched.client,admin,id,{},true),failure(400));
+ await assert.rejects(()=>decideProvider(untouched.client,admin,id,{reason:'   '},true),failure(400));
  await assert.rejects(()=>decideProvider(untouched.client,admin,id,{reason:'  '},false),failure(400));
- await assert.rejects(()=>decideProvider(untouched.client,admin,id,{reason:'sobrando'},true),failure(400));
+ await assert.rejects(()=>decideProvider(untouched.client,admin,id,{reason:'sobrando',extra:true},true),failure(400));
  await assert.rejects(()=>decideProvider(untouched.client,admin,'../accounts',{},true),failure(400));
  await assert.rejects(()=>deactivateUser(untouched.client,admin,id,{}),failure(400));
  await assert.rejects(()=>deleteCustomer(untouched.client,admin,id,{reason:''}),failure(400));untouched.done();
@@ -134,12 +136,12 @@ test('cadastro de administrador e motivos são validados antes de qualquer grava
 test('decisão sobre cadastro que saiu de análise informa o status atual e exclusão recusa prestador',async()=>{
  for(const status of ['Aprovado','Rejeitado']){
   const db=scripted([{match:/^BEGIN$/},{match:/approval_status.*FOR UPDATE OF p/,rows:[{approval_status:status,disabled_at:null}]},{match:/^ROLLBACK$/}]);
-  await assert.rejects(()=>decideProvider(db.client,admin,id,{},true),(e:unknown)=>failure(409,'NOT_PENDING')(e)&&(e as WorkflowError).details?.approvalStatus===status&&(e as WorkflowError).message.includes(status));db.done();
+  await assert.rejects(()=>decideProvider(db.client,admin,id,{reason:'Dados conferidos'},true),(e:unknown)=>failure(409,'NOT_PENDING')(e)&&(e as WorkflowError).details?.approvalStatus===status&&(e as WorkflowError).message.includes(status));db.done();
  }
  const missing=scripted([{match:/^BEGIN$/},{match:/FOR UPDATE OF p/,rows:[]},{match:/^ROLLBACK$/}]);await assert.rejects(()=>decideProvider(missing.client,admin,id,{reason:'Motivo'},false),failure(404));missing.done();
  const approved=scripted([{match:/^BEGIN$/},{match:/FOR UPDATE OF p/,rows:[{approval_status:'Em análise',disabled_at:null}]},{match:/UPDATE maridao.provider_profiles SET approval_status=\$2/},{match:/INSERT INTO maridao.admin_events/},{match:/^COMMIT$/}]);
- assert.deepEqual(await decideProvider(approved.client,admin,id,{},true),{id,approvalStatus:'Aprovado'});approved.done();
- assert.deepEqual(approved.commands[2].values,[id,'Aprovado',null,admin.id]);assert.deepEqual(approved.commands[3].values,[admin.id,id,'provider_approved','','administration']);
+ assert.deepEqual(await decideProvider(approved.client,admin,id,{reason:'Dados conferidos'},true),{id,approvalStatus:'Aprovado',approvalReason:'Dados conferidos'});approved.done();
+ assert.deepEqual(approved.commands[2].values,[id,'Aprovado','Dados conferidos',admin.id]);assert.deepEqual(approved.commands[3].values,[admin.id,id,'provider_approved','Dados conferidos','administration']);
  const provider=scripted([{match:/^BEGIN$/},{match:/FOR UPDATE OF r/},{match:/FOR UPDATE OF a/,rows:[{id,role:'provider',disabled_at:null,deleted_at:null}]},{match:/^ROLLBACK$/}]);
  await assert.rejects(()=>deleteCustomer(provider.client,admin,id,{reason:'Pedido do titular'}),failure(409,'PROVIDER_CANNOT_BE_DELETED'));provider.done();
 });

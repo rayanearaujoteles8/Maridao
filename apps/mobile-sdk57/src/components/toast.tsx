@@ -121,7 +121,7 @@ export function ToastSlot({ item, onGone, sheet = false }: { item: ToastItem; on
         <Text style={[s.text, { color: c.text }]}>{item.text}</Text>
       </View>
       {item.action ? (
-        <Pressable accessibilityRole="button" accessibilityLabel={item.action.label} hitSlop={8} onPressIn={hold} onPress={() => { item.action?.onPress(); dismiss(); }} style={({ pressed }) => [s.action, pressed && s.pressed]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={item.action.label} hitSlop={8} onPressIn={hold} onPress={() => { item.action?.onPress(); dismiss(); }} style={({ pressed }) => [s.action, { backgroundColor: c.surface, borderColor: c.link }, pressed && s.pressed]}>
           <Text style={[s.actionText, { color: c.link }]}>{item.action.label}</Text>
         </Pressable>
       ) : null}
@@ -134,7 +134,7 @@ const s = StyleSheet.create({
   glyph: { fontSize: 15, lineHeight: 19, fontWeight: '800' },
   textWrap: { flexShrink: 1 },
   text: { fontSize: 15, lineHeight: 21, fontWeight: '600', flexShrink: 1 },
-  action: { minHeight: 28, justifyContent: 'center' },
-  actionText: { fontSize: 15, fontWeight: '700', textDecorationLine: 'underline' },
+  action: { minHeight: 44, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  actionText: { fontSize: 15, fontWeight: '700' },
   pressed: { opacity: 0.6 },
 });

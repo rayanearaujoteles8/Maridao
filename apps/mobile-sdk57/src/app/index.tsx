@@ -134,5 +134,5 @@ const useS = themed(colors => StyleSheet.create({
   choiceDescription: { fontSize: 11, lineHeight: 16, minHeight: 32, color: colors.textSoft },
   footer: { alignItems: 'center', marginTop: 'auto', paddingTop: 16 },
   footerText: { textAlign: 'center', fontSize: 12, lineHeight: 17, color: colors.textMuted },
-  recovery: { color: colors.text, fontSize: 13, fontWeight: '600', paddingHorizontal: 12, paddingVertical: 13, minHeight: 44, textDecorationLine: 'underline' },
+  recovery: { color: colors.text, fontSize: 13, fontWeight: '600', paddingVertical: 13, minHeight: 44, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 14, paddingHorizontal: 16, textAlign: 'center', overflow: 'hidden' },
 }));

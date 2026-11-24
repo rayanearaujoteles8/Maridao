@@ -6,6 +6,8 @@ import { closeProviderDatabase } from './providers.ts';
 import { closeAuthDatabase } from './auth.ts';
 import { app } from './app.ts';
 import { closeDatabase } from './customers.ts';
+import {createDatabasePool} from './database.ts';
+import {deliverNotifications} from './notification-delivery.ts';
 
 const port = Number(process.env.PORT ?? '3000');
 const host = process.env.HOST ?? '127.0.0.1';
@@ -31,8 +33,20 @@ const autoConfirm = () => {
   runExpireProposals().then(ids => { if (ids.length) console.log(`Propostas expiradas: ${ids.length}.`); }, () => { console.error('Não foi possível aplicar a expiração das propostas.'); });
 };
 const autoConfirmTimer = setInterval(autoConfirm, 10 * 60_000);
+const notificationPool=createDatabasePool();
+let delivering=false;
+const deliver=async()=>{
+ if(delivering)return;
+ delivering=true;
+ try{const result=await deliverNotifications(notificationPool);if(result?.failed)console.error('Uma notificação aguarda nova tentativa de entrega.');}
+ catch{console.error('Não foi possível entregar notificações. Confira a migração 017; haverá nova tentativa.');}
+ finally{delivering=false;}
+};
+const notificationTimer=setInterval(()=>void deliver(),5_000);
+notificationTimer.unref();
+server.once('listening',()=>void deliver());
 autoConfirmTimer.unref();
 server.once('listening', autoConfirm);
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.on(signal, () => { clearInterval(autoConfirmTimer); server.close(() => { void closeTeamDatabase(); void closeDatabase(); void closeAuthDatabase(); void closeProviderDatabase(); void closeSearchDatabase(); void closeRequestDatabase(); void closeProposalDatabase(); }); });
+  process.on(signal, () => { clearInterval(notificationTimer); clearInterval(autoConfirmTimer); server.close(() => { void notificationPool.end(); void closeTeamDatabase(); void closeDatabase(); void closeAuthDatabase(); void closeProviderDatabase(); void closeSearchDatabase(); void closeRequestDatabase(); void closeProposalDatabase(); }); });
 }

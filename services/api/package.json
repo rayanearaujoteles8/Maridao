@@ -10,9 +10,11 @@
     "db:check": "node --env-file=.env src/check-database.ts",
     "test:compatibility:db": "node --env-file=.env --test tests/catalog-compatibility.database.test.ts",
     "test:progress:db": "node --env-file=.env --test tests/request-progress.database.test.ts",
-    "test:unit": "node --test tests/customer.test.ts tests/auth.test.ts tests/provider.test.ts tests/search.test.ts tests/requests.test.ts tests/catalog.test.ts tests/proposals.test.ts tests/request-progress.test.ts tests/proposal-management.test.ts tests/customer-confirmation.test.ts tests/team-workflows.test.ts tests/admin.test.ts tests/request-cancellation.test.ts tests/request-completion.test.ts tests/proposal-versions.test.ts tests/account-deletion.test.ts",
+    "test:unit": "node --test tests/customer.test.ts tests/auth.test.ts tests/provider.test.ts tests/search.test.ts tests/requests.test.ts tests/catalog.test.ts tests/proposals.test.ts tests/request-progress.test.ts tests/proposal-management.test.ts tests/customer-confirmation.test.ts tests/team-workflows.test.ts tests/admin.test.ts tests/request-cancellation.test.ts tests/request-completion.test.ts tests/proposal-versions.test.ts tests/account-deletion.test.ts tests/notifications.test.ts tests/mail.test.ts tests/profile-photo.test.ts",
     "test:proposals:db": "node --env-file=.env --test tests/proposal-management.database.test.ts",
+    "mail:configure": "node --env-file-if-exists=.env src/configure-mail.ts",
     "db:workflows": "node --env-file=.env src/check-workflows.ts",
+    "test:notifications:db": "node --env-file=.env --test tests/notification-delivery.database.test.ts",
     "db:activate": "node --env-file=.env src/activate-database.ts",
     "test:team:db": "node --env-file=.env --test tests/team-workflows.database.test.ts",
     "test:admin:db": "node --env-file=.env --test tests/admin.database.test.ts",
@@ -30,11 +32,14 @@
   "type": "module",
   "dependencies": {
     "express": "^5.3.0",
-    "pg": "^8.23.1"
+    "nodemailer": "^10.6.1",
+    "pg": "^8.23.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
+    "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "typescript": "^7.0.2"
   },

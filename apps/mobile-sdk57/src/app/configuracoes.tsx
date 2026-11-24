@@ -1,12 +1,13 @@
-import {useRef,useState,type ComponentRef} from 'react';
+import {ProfileAvatar} from '@/components/profile-avatar';
+import {ProfilePhotoEditor} from '@/components/profile-photo-editor';
+import {useRef,useState,type ComponentRef,type ReactNode} from 'react';
 import {router} from 'expo-router';
 import { Appear } from '@/components/skeleton';
-import {Alert,Keyboard,StyleSheet,Text,TextInput,View,type ScrollView} from 'react-native';
+import {Alert,Keyboard,Pressable,StyleSheet,Text,TextInput,View,type ScrollView} from 'react-native';
 import {useSession} from '@/components/session';
 import {PrivateScreen,usePrivateResource,Feedback,Button,useUi} from '@/components/private-screen';
 import {SelectionField,CatalogNotice} from '@/components/selection-field';
 import {useCatalog} from '@/hooks/use-catalog';
-import {useStyles} from '@/components/access-screen';
 import {DangerButton,Field,PasswordField} from '@/components/admin-ui';
 import {useToast} from '@/components/toast';
 import {api,ApiError} from '@/lib/api';
@@ -17,9 +18,9 @@ type Profile={name:string;phone:string;neighborhood?:string;categories?:string[]
 type Closure={action:'delete'|'deactivate';allowed:boolean;activeRequests:number;openRequests:number;code?:string;reason?:string};
 type SettingsData={profile:Profile;mailMode:string;closure?:Closure};
 // Ao abrir a confirmação de excluir/inativar (fim da tela), a rolagem desce até o campo de senha, que nasce abaixo da dobra.
-export default function Settings(){const resource=usePrivateResource<SettingsData>('/account');const scroll=useRef<ComponentRef<typeof ScrollView>>(null);const reveal=()=>setTimeout(()=>scroll.current?.scrollToEnd({animated:true}),80);return <PrivateScreen title="Configurações" onRefresh={resource.refresh} scrollRef={scroll}><Feedback {...resource} skeleton="form"/>{resource.data?<Appear style={{gap:24}}><ProfileForm key={JSON.stringify(resource.data.profile)} profile={resource.data.profile} mailMode={resource.data.mailMode} resource={resource}/><CloseAccount role={resource.data.profile.role} closure={resource.data.closure} disabled={resource.busy} reload={resource.reload} onOpen={reveal}/></Appear>:null}</PrivateScreen>;}
+export default function Settings(){const resource=usePrivateResource<SettingsData>('/account');const scroll=useRef<ComponentRef<typeof ScrollView>>(null);const reveal=()=>setTimeout(()=>scroll.current?.scrollToEnd({animated:true}),80);return <PrivateScreen title="Configurações" onRefresh={resource.refresh} scrollRef={scroll}><Feedback {...resource} skeleton="form"/>{resource.data?<Appear style={{gap:24}}><ProfileForm key={JSON.stringify(resource.data.profile)} profile={resource.data.profile} mailMode={resource.data.mailMode} resource={resource}/><SettingsSection mark="!" title="Encerrar minha conta" description="Veja as condições antes de continuar" danger><CloseAccount role={resource.data.profile.role} closure={resource.data.closure} disabled={resource.busy} reload={resource.reload} onOpen={reveal}/></SettingsSection></Appear>:null}</PrivateScreen>;}
 function ProfileForm({profile,mailMode,resource}:{profile:Profile;mailMode:string;resource:ReturnType<typeof usePrivateResource<SettingsData>>}){
- const styles=useStyles();const {colors}=useTheme();const ui=useUi();
+ const c=useC();const {colors}=useTheme();const ui=useUi();
  const catalog=useCatalog(),{setSession}=useSession();
  const [form,setForm]=useState({name:profile.name,phone:profile.phone,neighborhood:profile.neighborhood??'',categories:profile.categories??[],specialties:profile.specialties??[],neighborhoods:profile.neighborhoods??[],availability:profile.availability??''});
  const [currentPassword,setCurrentPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[token,setToken]=useState('');
@@ -27,8 +28,12 @@ function ProfileForm({profile,mailMode,resource}:{profile:Profile;mailMode:strin
  const specialties=(catalog.data?.services.filter(s=>form.categories.includes(s.value)).flatMap(s=>s.specialties)??[]).filter((v,i,a)=>a.indexOf(v)===i).map(value=>({value,label:value}));
  async function save(){const body=provider?{name:form.name,phone:form.phone,categories:form.categories,specialties:form.specialties,neighborhoods:form.neighborhoods,availability:form.availability,currentPassword}:{name:form.name,phone:form.phone,neighborhood:form.neighborhood,currentPassword};const result=await resource.perform('/account',body,'PATCH');if(result){setCurrentPassword('');resource.setMessage(result.message);}}
  async function changePassword(){const result=await resource.perform('/account/password',{currentPassword,newPassword},'POST');if(result){Alert.alert('Senha alterada','Entre novamente com sua nova senha.');setSession(null);}}
- return <View style={ui.group}>
-  <Text style={styles.note}>Palmas – TO · {profile.email}</Text>
+ return <View style={{gap:14}}>
+  <View style={c.identity}><ProfileAvatar name={profile.name} size={54}/><View style={{flex:1,gap:4}}><Text style={c.identityName}>{profile.name}</Text><Text style={c.body}>{provider?'Conta de prestador':'Conta de cliente'} · Palmas, TO</Text></View></View>
+  <Text style={c.eyebrow}>SUA CONTA</Text>
+  <SettingsSection mark="◎" title="Foto de perfil" description="Adicione ou troque sua foto"><ProfilePhotoEditor name={profile.name}/></SettingsSection>
+  <SettingsSection mark="01" title="Meus dados" description="Perfil, telefone e local de atendimento">
+
   {(['name','phone'] as const).map(key=><View key={key} style={ui.group}><Text style={ui.label}>{key==='name'?'Nome':'Telefone com DDD'}</Text><TextInput accessibilityLabel={key==='name'?'Nome':'Telefone com DDD'} editable={!busy} value={form[key]} maxLength={key==='name'?150:30} keyboardType={key==='phone'?'phone-pad':'default'} onChangeText={v=>setForm(old=>({...old,[key]:v}))} style={ui.input}/></View>)}
   {!catalog.data?<CatalogNotice error={catalog.error} retry={catalog.retry}/>:provider?<>
    <Text style={ui.label}>Categorias de serviço</Text><SelectionField label="Categorias de serviço" options={catalog.data.services} multiple values={form.categories} disabled={busy} onChange={categories=>setForm(old=>({...old,categories,specialties:old.specialties.filter(value=>catalog.data!.services.filter(s=>categories.includes(s.value)).some(s=>s.specialties.includes(value)))}))}/>
@@ -38,9 +43,16 @@ function ProfileForm({profile,mailMode,resource}:{profile:Profile;mailMode:strin
   </>:<><Text style={ui.label}>Bairro ou quadra</Text><SelectionField label="Bairro ou quadra" options={catalog.data.neighborhoods} values={form.neighborhood?[form.neighborhood]:[]} disabled={busy} onChange={v=>setForm(old=>({...old,neighborhood:v[0]??''}))}/></>}
   <Text style={ui.label}>Senha atual para confirmar alterações</Text><TextInput accessibilityLabel="Senha atual" secureTextEntry autoCapitalize="none" style={ui.input} maxLength={128} value={currentPassword} onChangeText={setCurrentPassword} editable={!busy}/>
   <Button label="Salvar perfil" disabled={busy||!catalog.data} onPress={()=>void save()}/>
-  <View style={ui.card}><Text style={ui.label}>Trocar senha</Text><TextInput placeholderTextColor={colors.placeholder} accessibilityLabel="Nova senha" secureTextEntry autoCapitalize="none" placeholder="Nova senha, de 8 a 128 caracteres" style={ui.input} maxLength={128} value={newPassword} onChangeText={setNewPassword} editable={!busy}/><Button label="Alterar senha e sair" disabled={busy} onPress={()=>void changePassword()}/></View>
-  <View style={ui.card}><Text style={ui.label}>{profile.email_verified_at?'E-mail confirmado':'Confirmar meu e-mail'}</Text><Text style={styles.note}>{mailMode==='local'?'Modo de teste: as instruções são gravadas na caixa de saída local do computador.':'O envio de e-mail precisa ser configurado.'}</Text>{!profile.email_verified_at?<><Button secondary label="Solicitar código de confirmação" disabled={busy||mailMode!=='local'} onPress={()=>void resource.perform('/account/verify-email',{},'POST').then(r=>{if(r)resource.setMessage(r.message);})}/><TextInput accessibilityLabel="Código recebido no e-mail de teste" autoCapitalize="none" style={ui.input} maxLength={64} value={token} onChangeText={setToken} editable={!busy}/><Button label="Confirmar e-mail" disabled={busy} onPress={()=>void resource.perform('/account/confirm-email',{token},'POST').then(r=>{if(r)void resource.reload();})}/></>:null}</View>
+  </SettingsSection>
+  <SettingsSection mark="02" title="Senha e segurança" description="Atualize sua senha de acesso"><Text style={c.body}>Para sua segurança, você precisará entrar novamente após a troca.</Text><Text style={ui.label}>Senha atual</Text><TextInput accessibilityLabel="Senha atual para trocar a senha" secureTextEntry autoCapitalize="none" style={ui.input} maxLength={128} value={currentPassword} onChangeText={setCurrentPassword} editable={!busy}/><Text style={ui.label}>Nova senha</Text><TextInput placeholderTextColor={colors.placeholder} accessibilityLabel="Nova senha" secureTextEntry autoCapitalize="none" placeholder="Nova senha, de 8 a 128 caracteres" style={ui.input} maxLength={128} value={newPassword} onChangeText={setNewPassword} editable={!busy}/><Button label="Alterar senha e sair" disabled={busy} onPress={()=>void changePassword()}/></SettingsSection>
+  <SettingsSection mark={profile.email_verified_at?'✓':'03'} title="Meu e-mail" description={profile.email_verified_at?'E-mail confirmado':'Confirme seu endereço de e-mail'}><Text style={c.email}>{profile.email}</Text><Text style={c.body}>{profile.email_verified_at?'Seu endereço de e-mail já está confirmado.':mailMode==='local'?'Modo de teste: as instruções são gravadas na caixa de saída local do computador.':mailMode==='smtp'?'Enviaremos um código para seu e-mail. Confira também a pasta de spam.':'O envio de e-mail precisa ser configurado.'}</Text>{!profile.email_verified_at?<><Button secondary label="Solicitar código de confirmação" disabled={busy||mailMode==='unconfigured'} onPress={()=>void resource.perform('/account/verify-email',{},'POST').then(r=>{if(r)resource.setMessage(r.message);})}/><TextInput accessibilityLabel="Código recebido por e-mail" autoCapitalize="none" style={ui.input} maxLength={64} value={token} onChangeText={setToken} editable={!busy}/><Button label="Confirmar e-mail" disabled={busy} onPress={()=>void resource.perform('/account/confirm-email',{token},'POST').then(r=>{if(r)void resource.reload();})}/></>:null}</SettingsSection>
  </View>;
+}
+
+
+function SettingsSection({mark,title,description,danger=false,children}:{mark:string;title:string;description:string;danger?:boolean;children:ReactNode}){
+ const [open,setOpen]=useState(false);const c=useC();
+ return <View style={[c.section,danger&&c.dangerSection]}><Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{expanded:open}} onPress={()=>setOpen(value=>!value)} style={({pressed})=>[c.sectionHeader,pressed&&{opacity:0.7}]}><View style={[c.mark,danger&&c.dangerMark]}><Text style={[c.markText,danger&&c.dangerText]}>{mark}</Text></View><View style={{flex:1,gap:4}}><Text style={[c.sectionTitle,danger&&c.dangerText]}>{title}</Text><Text style={c.description}>{description}</Text></View><Text accessible={false} style={c.chevron}>{open?'−':'+'}</Text></Pressable>{open?<View style={c.sectionBody}>{children}</View>:null}</View>;
 }
 
 const MAX_REASON=500;
@@ -126,6 +138,22 @@ function CloseAccount({role,closure,disabled,reload,onOpen}:{role:Profile['role'
  </View>;
 }
 const useC=themed(colors=>StyleSheet.create({
+ identity:{flexDirection:'row',alignItems:'center',gap:14,padding:20,borderRadius:24,backgroundColor:colors.accentSoft,marginBottom:12},
+ avatar:{width:54,height:54,borderRadius:18,backgroundColor:colors.primary,alignItems:'center',justifyContent:'center'},
+ initial:{fontSize:25,fontWeight:'700',color:colors.onPrimary},
+ identityName:{fontSize:21,fontWeight:'700',color:colors.text,letterSpacing:-0.5},
+ eyebrow:{fontSize:11,fontWeight:'700',letterSpacing:2,color:colors.textSoft,marginLeft:4,marginBottom:2},
+ section:{borderWidth:1,borderColor:colors.border,borderRadius:22,backgroundColor:colors.surface,overflow:'hidden'},
+ sectionHeader:{flexDirection:'row',alignItems:'center',gap:13,padding:18,minHeight:96},
+ mark:{width:40,height:40,borderRadius:13,backgroundColor:colors.accentSoft,alignItems:'center',justifyContent:'center'},
+ markText:{fontSize:14,fontWeight:'700',color:colors.text},
+ sectionTitle:{fontSize:17,fontWeight:'700',color:colors.text,letterSpacing:-0.3},
+ description:{fontSize:13,lineHeight:19,color:colors.textSoft},
+ chevron:{fontSize:24,color:colors.textSoft,fontWeight:'400'},
+ sectionBody:{padding:18,paddingTop:4,gap:14},
+ dangerSection:{marginTop:8},dangerMark:{backgroundColor:colors.dangerSoft},dangerText:{color:colors.danger},
+ email:{fontSize:15,lineHeight:22,fontWeight:'600',color:colors.text},
+
  title:{fontSize:22,lineHeight:28,fontWeight:'700',letterSpacing:-0.4,color:colors.text,marginTop:8},
  body:{fontSize:15,lineHeight:23,color:colors.textSoft},
  warning:{backgroundColor:colors.dangerSoft,borderRadius:20,padding:18,gap:8},

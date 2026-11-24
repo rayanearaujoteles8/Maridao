@@ -1,5 +1,5 @@
 import {randomBytes} from 'node:crypto';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {deliverMail,mailMode,type Mail} from './mail-delivery.ts';
 import type {PoolClient} from 'pg';
 import {tokenHash,type Profile} from './auth.ts';
 import {hashPassword,verifyPassword} from './password.ts';
@@ -135,10 +135,9 @@ export async function replaceProvisionalPassword(db:DB,user:Profile,sessionHash:
  }catch(e){await db.query('ROLLBACK');throw e;}
 }
 type Purpose='password_reset'|'verify_email';
-export function mailEnabled(){return process.env.MAIL_MODE==='local'&&process.env.NODE_ENV!=='production';}
-type TestMail={to:string;purpose:Purpose;token:string;expiresInMinutes:number};
-async function deliverLocal(mail:TestMail){const directory=new URL('../.local-mail/',import.meta.url);await mkdir(directory,{recursive:true,mode:0o700});await writeFile(new URL(randomBytes(16).toString('hex')+'.json',directory),JSON.stringify(mail,null,2),{mode:0o600,flag:'wx'});}
-export async function requestChallenge(db:DB,input:unknown,purpose:Purpose,user?:Profile,deliver:(mail:TestMail)=>Promise<void>=deliverLocal){
+export function mailEnabled(){return mailMode()!=='unconfigured';}
+
+export async function requestChallenge(db:DB,input:unknown,purpose:Purpose,user?:Profile,deliver:(mail:Mail)=>Promise<void>=deliverMail){
  if(!mailEnabled())throw new WorkflowError(503,'O envio de e-mail ainda não foi configurado.');
  const v=object(input,purpose==='password_reset'?['email']:[]);
  const email=purpose==='password_reset'?text(v.email,254,'E-mail').toLowerCase():user?.email;
@@ -149,8 +148,12 @@ export async function requestChallenge(db:DB,input:unknown,purpose:Purpose,user?
   if(account){recipient=account.email;await db.query(`INSERT INTO maridao.account_challenges(account_id,purpose,token_hash,expires_at) VALUES($1,$2,$3,clock_timestamp()+interval '15 minutes') ON CONFLICT(account_id,purpose) DO UPDATE SET token_hash=EXCLUDED.token_hash,expires_at=EXCLUDED.expires_at,attempts=0`,[account.id,purpose,tokenHash(token)]);}
   await db.query('COMMIT');
  }catch(e){await db.query('ROLLBACK');throw e;}
- if(recipient)await deliver({to:recipient,purpose,token,expiresInMinutes:15});
- return {message:'Se houver uma conta ativa, as instruções estarão na caixa de e-mail de teste.',delivery:'local'};
+ const delivery=mailMode();
+ if(recipient){try{await deliver({to:recipient,purpose,token,expiresInMinutes:15});}catch(error){
+  if(delivery==='local')throw error;
+  console.error('Falha no envio de e-mail de autenticação. Confira a configuração de envio.');
+ }}
+ return {message:delivery==='local'?'Se houver uma conta ativa, as instruções estarão na caixa de e-mail de teste.':'Se houver uma conta ativa, você receberá um código por e-mail. Confira também a pasta de spam.',delivery};
 }
 export async function consumeChallenge(db:DB,input:unknown,purpose:Purpose,user?:Profile){
  const v=object(input,purpose==='password_reset'?['email','token','newPassword']:['token']);

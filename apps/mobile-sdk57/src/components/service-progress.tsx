@@ -113,7 +113,7 @@ const useS = themed(colors => StyleSheet.create({
  off:{opacity:0.5},
  error:{color:colors.danger,fontSize:16,lineHeight:24},
  input:{borderWidth:1,borderColor:colors.borderStrong,borderRadius:14,padding:14,minHeight:96,textAlignVertical:'top',color:colors.text,fontSize:17},
- secondary:{minHeight:44,paddingVertical:10,justifyContent:'center',alignSelf:'flex-start'},
- link:{fontSize:15,lineHeight:22,fontWeight:'600',color:colors.text,textDecorationLine:'underline'},
+ secondary:{minHeight:48,paddingVertical:13,paddingHorizontal:16,justifyContent:'center',alignItems:'center',backgroundColor:colors.surface,borderWidth:1,borderColor:colors.borderStrong,borderRadius:14},
+ link:{fontSize:15,lineHeight:22,fontWeight:'600',color:colors.text,textAlign:'center'},
  info:{padding:16,borderRadius:16,backgroundColor:colors.surface,gap:8},
 }));

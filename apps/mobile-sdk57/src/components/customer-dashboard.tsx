@@ -1,3 +1,4 @@
+import {ProfileAvatar} from './profile-avatar';
 import { useRef } from 'react';
 import { PressableScale } from '@/components/pressable-scale';
 import { router, useScrollToTop } from 'expo-router';
@@ -16,7 +17,7 @@ import { themed } from '@/theme';
 export type CustomerRequest = { id: string; category: string; neighborhood: string; neighborhood_label?: string; status: string; can_confirm_completion?: boolean };
 type Props = {
   role?: 'customer' | 'provider';
-  profile: { name: string; neighborhood: string; city: string; state: string; approvalStatus?: string; approvalReason?: string };
+  profile: { id?: string; name: string; neighborhood: string; city: string; state: string; approvalStatus?: string; approvalReason?: string };
   requests: CustomerRequest[]; requestsLoading: boolean; requestsError: string;
   accountError: string; signingOut: boolean; onRetry: () => void; onLogout: () => void;
   /** puxar para atualizar: recarrega perfil e últimos pedidos sem apagar a tela */
@@ -37,7 +38,7 @@ export function CustomerDashboard({ role = 'customer', profile, requests, reques
     <ScrollView {...pull.props} ref={scroll} showsVerticalScrollIndicator={false} contentContainerStyle={s.page}>
       <View style={s.header}>
         <Image source={require('../../assets/brand/logotipo-preto.png')} style={s.logo} resizeMode="contain" accessibilityLabel="Maridão" />
-        <View style={s.headerEnd}><View style={s.accountTag}><View style={s.avatar} accessible={false}><Text style={s.initial}>{firstName?.slice(0, 1).toLocaleUpperCase('pt-BR')}</Text></View><Text style={s.accountLabel}>{provider ? 'PRESTADOR' : 'CLIENTE'}</Text></View><ThemeToggle /></View>
+        <View style={s.headerEnd}><View style={s.accountTag}><ProfileAvatar name={profile.name} size={36}/><Text style={s.accountLabel}>{provider ? 'PRESTADOR' : 'CLIENTE'}</Text></View><ThemeToggle /></View>
       </View>
       <View style={s.greeting}>
         <Text style={s.eyebrow}>{provider ? 'SEU TRABALHO FAZ A DIFERENÇA' : 'BOM TER VOCÊ POR AQUI'}</Text>
@@ -70,6 +71,7 @@ export function CustomerDashboard({ role = 'customer', profile, requests, reques
       </View></ListEntrance>
       <PressableScale accessibilityRole="button" onPress={()=>router.push('/historico')} scaleTo={0.98} style={s.empty}><Text style={s.emptyTitle}>Meu histórico ↗</Text><Text style={s.helper}>{provider?'Consulte suas propostas e atendimentos anteriores.':'Reveja seus pedidos, propostas escolhidas e atendimentos.'}</Text></PressableScale>
       <PressableScale accessibilityRole="button" onPress={()=>router.push('/configuracoes')} scaleTo={0.98} style={s.empty}><Text style={s.emptyTitle}>Menu · Configurações ↗</Text><Text style={s.helper}>Editar perfil, senha e dados da conta.</Text></PressableScale><PressableScale accessibilityRole="button" onPress={()=>router.push('/notificacoes')} scaleTo={0.98} style={s.empty}><Text style={s.emptyTitle}>Notificações ↗</Text><Text style={s.helper}>Propostas, mensagens e atualizações dos pedidos.</Text></PressableScale>{accountError ? <Text accessibilityRole="alert" style={s.error}>{accountError}</Text> : null}
+      {provider&&profile.id?<PressableScale accessibilityRole="button" onPress={()=>router.push({pathname:'/perfil-prestador',params:{id:profile.id}})} scaleTo={0.98} style={s.empty}><Text style={s.emptyTitle}>Meu perfil e avaliações ↗</Text><Text style={s.helper}>Confira sua reputação e os comentários dos clientes.</Text></PressableScale>:null}
       <View style={s.footer}><Text style={s.footerText}>Conectando quem precisa a quem sabe fazer.</Text><Pressable accessibilityRole="button" disabled={signingOut} accessibilityState={{ disabled: signingOut, busy: signingOut }} onPress={onLogout} style={s.logout}><Text style={s.logoutText}>{signingOut ? 'Saindo…' : 'Sair da conta'}</Text></Pressable></View>
     </ScrollView>
   </SafeAreaView>;
@@ -139,12 +141,12 @@ const useS = themed(colors => StyleSheet.create({
   empty: { borderWidth: 1, borderColor: colors.border, borderRadius: 22, padding: 20, gap: 9 },
   emptyTitle: { fontSize: 17, lineHeight: 23, fontWeight: '600', color: colors.text },
   helper: { fontSize: 13, lineHeight: 20, color: colors.textMuted },
-  retry: { minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' },
-  retryText: { fontSize: 13, color: colors.text, fontWeight: '600', textDecorationLine: 'underline' },
+  retry: { minHeight: 48, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 14, alignSelf: 'flex-start' },
+  retryText: { fontSize: 13, color: colors.text, fontWeight: '600' },
   error: { color: colors.danger, fontSize: 14, lineHeight: 21 },
   footer: { alignItems: 'center', gap: 2 },
   footerText: { fontSize: 11, lineHeight: 17, textAlign: 'center', color: colors.textMuted },
-  logout: { minHeight: 44, paddingHorizontal: 16, paddingVertical: 12 },
-  logoutText: { fontSize: 12, color: colors.textMuted, textDecorationLine: 'underline' },
+  logout: { minHeight: 48, paddingHorizontal: 20, paddingVertical: 14, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 14, backgroundColor: colors.surface },
+  logoutText: { fontSize: 12, color: colors.textMuted, fontWeight: '600' },
   pressed: { opacity: 0.75 },
 }));

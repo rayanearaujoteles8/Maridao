@@ -35,7 +35,7 @@ export function CancellationNote({ cancellation }: { cancellation?: Cancellation
   );
 }
 
-// Entrada discreta para a tela de cancelar: texto em tom de erro, sem preenchimento, para não competir com a ação principal.
+// Botão de cancelamento com fundo e contorno próprios para a ação destrutiva.
 export function CancelLink({ id, role, from, disabled = false }: { id: string; role: 'customer' | 'provider' | null | undefined; from?: 'list' | 'history'; disabled?: boolean }) {
   const s = useS();
   const label = cancelLabel(role);
@@ -59,7 +59,7 @@ const useS = themed(colors => StyleSheet.create({
   who: { fontSize: 15, lineHeight: 22, fontWeight: '600', color: colors.text },
   reason: { fontSize: 15, lineHeight: 22, color: colors.textSoft },
   strong: { fontWeight: '700', color: colors.text },
-  link: { minHeight: 44, alignSelf: 'flex-start', justifyContent: 'center', paddingVertical: 10, paddingRight: 12 },
-  linkText: { fontSize: 15, fontWeight: '600', color: colors.danger, textDecorationLine: 'underline' },
+  link: { minHeight: 48, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, borderColor: colors.danger, backgroundColor: colors.dangerSoft },
+  linkText: { fontSize: 15, fontWeight: '600', color: colors.danger, textAlign: 'center' },
   pressed: { opacity: 0.5 },
 }));

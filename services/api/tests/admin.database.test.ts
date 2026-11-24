@@ -79,14 +79,19 @@ test('PostgreSQL: área administrativa, aprovação de prestadores, exclusão de
   await assert.rejects(()=>sendProposal(db,a.id,request,proposalForm),AcceptanceError);
   // Aprovação: status, registro (RNF02.3) e notificação sem pedido.
   await assert.rejects(()=>decideProvider(db,customer,a.id,{reason:''},false),failure(400));
-  assert.deepEqual(await decideProvider(db,admin,a.id,{},true),{id:a.id,approvalStatus:'Aprovado'});
+  assert.deepEqual(await decideProvider(db,admin,a.id,{reason:'Dados conferidos'},true),{id:a.id,approvalStatus:'Aprovado',approvalReason:'Dados conferidos'});
   const decided=await one('SELECT approval_status,approval_reason,approval_decided_by,approval_decided_at FROM maridao.provider_profiles WHERE account_id=$1',[a.id]);
-  assert.equal(decided.approval_status,'Aprovado');assert.equal(decided.approval_decided_by,admin.id);assert.ok(decided.approval_decided_at);
-  assert.deepEqual((await raw.query('SELECT admin_id,action,reason,created_at IS NOT NULL AS dated FROM maridao.admin_events WHERE target_account_id=$1',[a.id])).rows,[{admin_id:admin.id,action:'provider_approved',reason:'',dated:true}]);
+  assert.equal(decided.approval_status,'Aprovado');assert.equal(decided.approval_reason,'Dados conferidos');assert.equal(decided.approval_decided_by,admin.id);assert.ok(decided.approval_decided_at);
+  assert.deepEqual((await raw.query('SELECT admin_id,action,reason,created_at IS NOT NULL AS dated FROM maridao.admin_events WHERE target_account_id=$1',[a.id])).rows,[{admin_id:admin.id,action:'provider_approved',reason:'Dados conferidos',dated:true}]);
   // Mesma consulta de GET /notifications.
-  const notifications=async(id:string)=>(await raw.query('SELECT id,request_id,title,created_at,read_at FROM maridao.notifications WHERE account_id=$1 AND ($2::bigint IS NULL OR id<$2::bigint) ORDER BY id DESC LIMIT 31',[id,null])).rows;
+  const notifications=async(id:string)=>{
+   // A 017 entrega fora da operação principal. Nesta transação de teste, processa
+   // a fila antes da leitura; o ROLLBACK final desfaz também essas entregas.
+   if((await raw.query("SELECT to_regprocedure('maridao.deliver_notifications(integer)') IS NOT NULL AS ready")).rows[0].ready)await raw.query('SELECT * FROM maridao.deliver_notifications(100)');
+   return (await raw.query('SELECT id,request_id,title,created_at,read_at FROM maridao.notifications WHERE account_id=$1 AND ($2::bigint IS NULL OR id<$2::bigint) ORDER BY id DESC LIMIT 31',[id,null])).rows;
+  };
   assert.deepEqual((await notifications(a.id)).map(n=>[n.request_id,n.title,n.read_at]),[[null,'Cadastro aprovado: seu perfil aparece nas buscas e você já pode enviar propostas',null]]);
-  await assert.rejects(()=>decideProvider(db,admin,a.id,{},true),(e:unknown)=>failure(409,'NOT_PENDING')(e)&&(e as WorkflowError).details?.approvalStatus==='Aprovado');
+  await assert.rejects(()=>decideProvider(db,admin,a.id,{reason:'Dados conferidos'},true),(e:unknown)=>failure(409,'NOT_PENDING')(e)&&(e as WorkflowError).details?.approvalStatus==='Aprovado');
   await assert.rejects(()=>pendingProviderDetail(db,a.id),failure(409,'NOT_PENDING'));
   assert.equal(await inSearch(a.id),true);assert.ok(!(await pending()).includes(a.id));
   const proposal=await sendProposal(db,a.id,request,proposalForm);assert.equal(proposal.status,'Pendente');
@@ -126,6 +131,7 @@ test('PostgreSQL: área administrativa, aprovação de prestadores, exclusão de
   assert.equal(await verifyPassword(provisional,gone.password_hash),false);
   assert.equal((await one('SELECT status FROM maridao.service_requests WHERE id=$1',[open])).status,'Cancelada');assert.equal((await one('SELECT status FROM maridao.proposals WHERE id=$1',[pendingProposal.id])).status,'Não selecionada');
   // 016: o prestador com proposta pendente é avisado uma vez; a conta excluída não recebe aviso.
+  await notifications(a.id);
   assert.deepEqual((await raw.query('SELECT account_id,title FROM maridao.notifications WHERE request_id=$1 AND id>(SELECT max(id) FROM maridao.notifications WHERE request_id=$1 AND title=$2)',[open,'Nova proposta recebida'])).rows,[{account_id:a.id,title:'Solicitação cancelada: sua proposta foi encerrada'}]);
   assert.deepEqual((await raw.query('SELECT actor_account_id,actor_kind,action FROM maridao.request_events WHERE request_id=$1',[open])).rows,[{actor_account_id:admin.id,actor_kind:'administration',action:'account_closed'}]);
   assert.equal((await one('SELECT count(*)::integer AS count FROM maridao.sessions WHERE account_id=$1',[removed.id])).count,0);

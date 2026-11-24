@@ -16,9 +16,21 @@ import { sessionGuard } from './session-guard.ts';
 import { adminRoutes } from './admin-routes.ts';
 export const app = express();
 app.disable('x-powered-by');
+// Prévia web local opcional: nenhuma origem é liberada sem configuração explícita.
+app.use((request,response,next)=>{
+ const origin=request.headers.origin,allowed=process.env.WEB_ORIGIN;
+ if(origin&&allowed&&origin===allowed){
+  response.set('Access-Control-Allow-Origin',allowed);response.vary('Origin');
+  response.set('Access-Control-Allow-Headers','Content-Type, Authorization');
+  response.set('Access-Control-Allow-Methods','GET, POST, PATCH, OPTIONS');
+  if(request.method==='OPTIONS'){response.sendStatus(204);return;}
+ }
+ next();
+});
 app.use((_request, response, next) => { response.set('Cache-Control', 'no-store'); response.set('X-Content-Type-Options', 'nosniff'); next(); });
 // Trava central: senha provisória pendente e papel de administrador (antes de qualquer rota).
 app.use(sessionGuard());
+app.use('/account/photo',registrationLimit,express.json({limit:'7mb'}));
 app.use(express.json({ limit: '16kb' }));
 // Liveness only: this endpoint does not claim database readiness.
 app.get('/health', (_request, response) => {

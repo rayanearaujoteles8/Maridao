@@ -20,10 +20,14 @@ export default function PendingProvider(){
  // 409 NOT_PENDING (ao abrir ou ao decidir): mostra o status atual informado pela API e volta à lista.
  useEffect(()=>{if(decided)Alert.alert('Cadastro já decidido',r.error,[{text:'Voltar à lista',onPress:toList}]);},[decided,r.error]);
  async function decide(kind:'approve'|'reject'){
-  const result=await r.perform('/admin/providers/'+id+'/'+kind,kind==='reject'?{reason:reason.trim()}:{},'POST');
+  const result=await r.perform('/admin/providers/'+id+'/'+kind,{reason:reason.trim()},'POST');
   if(result)Alert.alert(kind==='approve'?'Cadastro aprovado':'Cadastro rejeitado',result.message,[{text:'Voltar à lista',onPress:toList}]);
  }
- function approve(){Alert.alert('Aprovar este cadastro?',`${provider?.name} passará a aparecer nas buscas e poderá enviar propostas. A decisão não pode ser desfeita.`,[{text:'Voltar',style:'cancel'},{text:'Aprovar',onPress:()=>void decide('approve')}]);}
+ function approve(){
+  if(!reason.trim()){setReasonError('Informe o motivo da decisão, com até 500 caracteres.');return;}
+  setReasonError('');
+  Alert.alert('Aprovar este cadastro?',`${provider?.name} passará a aparecer nas buscas e poderá enviar propostas. A decisão não pode ser desfeita.`,[{text:'Voltar',style:'cancel'},{text:'Aprovar',onPress:()=>void decide('approve')}]);
+ }
  function reject(){
   if(!reason.trim()){setReasonError('Informe o motivo, com até 500 caracteres.');return;}
   setReasonError('');
@@ -47,12 +51,15 @@ export default function PendingProvider(){
     <InfoRow label="Disponibilidade" value={provider.availability||'—'}/>
     <InfoRow label="Cadastro enviado em" value={formatDate(provider.createdAt)}/>
    </View>
+   <Section title="Motivo da decisão">
+    <Field label="Motivo da aprovação ou rejeição (obrigatório)" value={reason} onChangeText={text=>{setReason(text);setReasonError('');}} placeholder="Descreva o resultado da conferência" multiline scrollEnabled={false} maxLength={500} editable={!busy} error={reasonError||r.fields.reason}/>
+    <Text style={styles.note}>O motivo fica registrado junto com o responsável e a data da decisão. Na rejeição, ele também é mostrado ao prestador.</Text>
+   </Section>
    <Section title="Aprovar">
     <Text style={styles.note}>O perfil passa a aparecer nas buscas e o prestador pode enviar propostas. Ele é avisado por notificação.</Text>
     <PrimaryButton label="Aprovar cadastro" disabled={busy} onPress={approve}/>
    </Section>
    <Section title="Rejeitar">
-    <Field label="Motivo da rejeição (obrigatório)" value={reason} onChangeText={text=>{setReason(text);setReasonError('');}} placeholder="O prestador verá este motivo" multiline scrollEnabled={false} maxLength={500} editable={!busy} error={reasonError||r.fields.reason}/>
     <DangerButton label="Rejeitar cadastro" disabled={busy} onPress={reject}/>
     <Feedback busy={false} error={r.error} message=""/>
    </Section>

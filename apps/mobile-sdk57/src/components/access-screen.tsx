@@ -27,7 +27,7 @@ export function AccessScreen({ title, description, fields }: { title: string; de
 export const useStyles = themed(colors => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   page: { padding: 24, gap: 24, width: '100%', maxWidth: 520, alignSelf: 'center', flexGrow: 1 },
-  back: { color: colors.text, fontSize: 16, paddingVertical: 12, textDecorationLine: 'underline' },
+  back: { color: colors.text, fontSize: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 13, minHeight: 48, textAlign: 'center', fontWeight: '600', overflow: 'hidden' },
   logo: { width: 180, height: 48, tintColor: colors.text },
   title: { fontSize: 34, fontWeight: '800', color: colors.text, lineHeight: 40 },
   description: { color: colors.textSoft, fontSize: 17, lineHeight: 26 },

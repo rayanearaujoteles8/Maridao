@@ -7,10 +7,13 @@ import {WorkflowError} from './workflow-error.ts';
 import {InputError} from './customer-validation.ts';
 import {ProviderInputError} from './provider-validation.ts';
 import {chatAccess,chatOpen,cursor,decryptMessage,requireId,reviewService,sendMessage} from './team-workflows.ts';
-import {changePassword,closureStatus,consumeChallenge,customerAuthorSql,customerRemovedSql,deactivateAccount,mailEnabled,replaceProvisionalPassword,requestChallenge,updateProfile,REMOVED_NAME} from './account-management.ts';
+import {changePassword,closureStatus,consumeChallenge,customerAuthorSql,customerRemovedSql,deactivateAccount,replaceProvisionalPassword,requestChallenge,updateProfile,REMOVED_NAME} from './account-management.ts';
 import {cancelRequest} from './request-cancellation.ts';
 import {completionAction,settleOverdue} from './request-completion.ts';
 import {proposalVersions} from './proposal-versions.ts';
+import {notificationQuery} from './notification-query.ts';
+import {normalizePhoto,photoData} from './profile-photo.ts';
+import {mailMode} from './mail-delivery.ts';
 import type {Pool,PoolClient} from 'pg';
 export const teamRoutes=Router();
 let pool:Pool|undefined;
@@ -21,10 +24,36 @@ export function route(fn:(req:Request,res:Response,db:PoolClient)=>Promise<void>
  try{if(req.method!=='GET'&&!req.is('application/json'))throw new WorkflowError(415,'Envie os dados em JSON.');pool??=createDatabasePool();db=await pool.connect();await fn(req,res,db);}
  catch(e){if(e instanceof WorkflowError){res.status(e.status).json({error:e.message,...e.details});return;}if(e instanceof InputError||e instanceof ProviderInputError){res.status(400).json({error:e.message,fields:e.fields});return;}next(e);}finally{db?.release();}
 };}
+// Photos are only available to signed-in users; provider visibility follows profile approval.
+teamRoutes.get(['/account/photo','/providers/:id/photo'],route(async(req,res,db)=>{
+ const u=await user(req),id=req.params.id as string|undefined;
+ if(id)requireId(id);
+ if(id&&id!==u.id){
+  const visible=(await db.query("SELECT 1 FROM maridao.provider_profiles p JOIN maridao.accounts a ON a.id=p.account_id WHERE p.account_id=$1 AND p.approval_status='Aprovado' AND a.disabled_at IS NULL",[id])).rowCount;
+  if(!visible)throw new WorkflowError(404,'Perfil indisponível.');
+ }
+ const ready=(await db.query("SELECT to_regclass('maridao.profile_photos') IS NOT NULL AS ready")).rows[0].ready;
+ if(!ready){res.json({photo:null});return;}
+ const row=(await db.query('SELECT image FROM maridao.profile_photos WHERE account_id=$1',[id??u.id])).rows[0];
+ res.json({photo:row?photoData(row.image):null});
+}));
+teamRoutes.post('/account/photo',route(async(req,res,db)=>{
+ const u=await user(req);
+ if(u.role!=='customer'&&u.role!=='provider')throw new WorkflowError(403,'Esta opção é para clientes e prestadores.');
+ const ready=(await db.query("SELECT to_regclass('maridao.profile_photos') IS NOT NULL AS ready")).rows[0].ready;
+ if(!ready)throw new WorkflowError(503,'As fotos de perfil ainda precisam ser ativadas no servidor.');
+ const image=(req.body as {image?:unknown})?.image;
+ if(image===null){await db.query('DELETE FROM maridao.profile_photos WHERE account_id=$1',[u.id]);res.json({photo:null,message:'Foto removida.'});return;}
+ const photo=await normalizePhoto(req.body);
+ // Atomic write rechecks account status against a concurrent closure/deletion.
+ const saved=await db.query(`INSERT INTO maridao.profile_photos(account_id,image) SELECT id,$2 FROM maridao.accounts WHERE id=$1 AND disabled_at IS NULL FOR SHARE ON CONFLICT(account_id) DO UPDATE SET image=EXCLUDED.image,updated_at=clock_timestamp()`,[u.id,photo]);
+ if(!saved.rowCount)throw new WorkflowError(401,'Entre na sua conta para continuar.');
+ res.json({photo:photoData(photo),message:'Foto de perfil atualizada.'});
+}));
 teamRoutes.get('/account',route(async(req,res,db)=>{
  const u=await user(req);
  const profile=u.role==='provider'?(await db.query('SELECT full_name AS name,phone,categories,specialties,neighborhoods,availability,city,state FROM maridao.provider_profiles WHERE account_id=$1',[u.id])).rows[0]:(await db.query('SELECT full_name AS name,phone,neighborhood,city,state FROM maridao.customer_profiles WHERE account_id=$1',[u.id])).rows[0];
- const account=(await db.query('SELECT email,email_verified_at FROM maridao.accounts WHERE id=$1',[u.id])).rows[0];res.json({profile:{...profile,...account,role:u.role},mailMode:mailEnabled()?'local':'unconfigured',closure:await closureStatus(db,u)});
+ const account=(await db.query('SELECT email,email_verified_at FROM maridao.accounts WHERE id=$1',[u.id])).rows[0];res.json({profile:{...profile,...account,role:u.role},mailMode:mailMode(),closure:await closureStatus(db,u)});
 }));
 teamRoutes.patch('/account',registrationLimit,route(async(req,res,db)=>{await updateProfile(db,await user(req),req.body);res.json({message:'Perfil atualizado.'});}));
 teamRoutes.post('/account/password',registrationLimit,route(async(req,res,db)=>{await changePassword(db,await user(req),req.body);res.json({message:'Senha alterada. Entre novamente.'});}));
@@ -68,10 +97,11 @@ teamRoutes.get('/requests/:id/messages',route(async(req,res,db)=>{
 }));
 teamRoutes.post('/requests/:id/messages',chatLimit,route(async(req,res,db)=>{const u=await user(req);await settleOverdue(db);res.status(201).json(await sendMessage(db,u,req.params.id as string,req.body));}));
 teamRoutes.get('/notifications',route(async(req,res,db)=>{
- const u=await user(req),before=cursor(req.query.before);
- const result=(await db.query('SELECT id,request_id,title,created_at,read_at FROM maridao.notifications WHERE account_id=$1 AND ($2::bigint IS NULL OR id<$2::bigint) ORDER BY id DESC LIMIT 31',[u.id,before])).rows;
+ const u=await user(req),query=notificationQuery(u.id,req.query);
+ const result=(await db.query(query.text,query.values)).rows;
  const unread=(await db.query('SELECT count(*)::integer AS count FROM maridao.notifications WHERE account_id=$1 AND read_at IS NULL',[u.id])).rows[0].count;
- res.json({notifications:result.slice(0,30),hasMore:result.length>30,unread});
+ const limit=query.limit;
+ res.json({notifications:result.slice(0,limit),hasMore:result.length>limit,unread});
 }));
 teamRoutes.post('/notifications/:id/read',route(async(req,res,db)=>{
  const u=await user(req),id=cursor(req.params.id);const result=await db.query('UPDATE maridao.notifications SET read_at=COALESCE(read_at,clock_timestamp()) WHERE id=$1 AND account_id=$2 RETURNING id,read_at',[id,u.id]);

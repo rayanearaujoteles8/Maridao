@@ -216,7 +216,7 @@ export async function pendingProviderDetail(db:DB,id:string){
 }
 export async function decideProvider(db:DB,admin:Admin,id:string,input:unknown,approve:boolean){
  requireId(id);
- const reason=approve?(object(input,[]),null):reasonText(object(input,['reason']).reason);
+ const reason=reasonText(object(input,['reason']).reason);
  return transaction(db,async()=>{
   const p=(await db.query('SELECT p.approval_status,a.disabled_at FROM maridao.provider_profiles p JOIN maridao.accounts a ON a.id=p.account_id WHERE p.account_id=$1 FOR UPDATE OF p',[id])).rows[0];
   if(!p)throw new WorkflowError(404,'Cadastro de prestador não encontrado.');
